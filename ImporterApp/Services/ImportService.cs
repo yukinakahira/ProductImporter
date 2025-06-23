@@ -63,19 +63,12 @@ namespace ImporterApp.Services
                 }
                 else if (rule.SaveTable == "PRODUCT_EAV")
                 {
-                    // 通常の属性を一旦登録
-                     var attr = new ProductAttribute
-                     {
-                         AttributeId = rule.AttributeId,
-                         Value = value
-                     };
-                     product.Attributes.Add(attr);
-
-                    // カテゴリに応じた意味変換ルール適用（例：SIZE_1 → SIZE_VERTICAL）
 
                     if (!string.IsNullOrWhiteSpace(product.category))
                     {
                         var mappedId = AttributeMeaningMapper.Map(rule.AttributeId, product.category, _meaningRuleRepo.GetMeaningRules());
+
+                        // 変換がある場合
                         if (mappedId != rule.AttributeId)
                         {
                             product.Attributes.Add(new ProductAttribute
@@ -85,7 +78,28 @@ namespace ImporterApp.Services
                             });
                             Logger.Info($"[INFO] Semantic Mapping Applied: {rule.AttributeId} → {mappedId} = {value}");
                         }
+                        else
+                        {
+                            // 変換がなかった場合でも属性を登録
+                            product.Attributes.Add(new ProductAttribute
+                            {
+                                AttributeId = rule.AttributeId,
+                                Value = value
+                            });
+                            Logger.Info($"[INFO] Set EAV Attribute (no mapping): {rule.AttributeId} = {value}");
+                        }
                     }
+                    else
+                    {
+                        // category が空の場合も通常登録
+                        product.Attributes.Add(new ProductAttribute
+                        {
+                            AttributeId = rule.AttributeId,
+                            Value = value
+                        });
+                        Logger.Info($"[INFO] Set EAV Attribute (no category): {rule.AttributeId} = {value}");
+                    }
+
                    // Logger.Info($"[INFO] Set EAV Attribute: {attr.AttributeId} = {attr.Value}");
                 }
             }
