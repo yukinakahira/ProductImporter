@@ -21,11 +21,20 @@ namespace ImporterApp.Services
             var ruleDetails = _ruleRepo.GetRules(userScenarioId);
             Logger.Info($"[INFO] Rules loaded: {ruleDetails.Count}");
 
+            // 商品種別を確定する
+            rowData.TryGetValue("COL_7", out var productType); // COL_7 = 商品種別
+            Logger.Info($"[INFO] 商品種別: {productType}");
+
+            // 商品種別にマッチするルールだけを抽出
+            var applicableRules = ruleDetails
+            .Where(r => string.IsNullOrEmpty(r.ProductType) || r.ProductType == productType)
+            .ToList();
+
             // ② Product初期化
             var product = new Product();
 
             // ③ 各ルールに従ってマッピング適用
-            foreach (var rule in ruleDetails)
+            foreach (var rule in applicableRules)
             {
                 if (!rowData.TryGetValue(rule.ColumnName, out var value)) continue;
 
@@ -44,6 +53,9 @@ namespace ImporterApp.Services
                         case "PRODUCT_NAME":
                             product.ProductName = value;
                             break;
+                        case "PRODUCT_TYPE":
+                            product.ProductType = value;
+                            break;
                     }
 
                     Logger.Info($"[INFO] Set {rule.AttributeId} = {value}");
@@ -55,6 +67,7 @@ namespace ImporterApp.Services
                         AttributeId = rule.AttributeId,
                         Value = value
                     });
+
 
                     Logger.Info($"[INFO] Set EAV Attribute: {rule.AttributeId} = {value}");
                 }
