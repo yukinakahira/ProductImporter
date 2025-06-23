@@ -18,7 +18,8 @@ namespace ImporterApp.Infrastructure
                 new() { ColumnName = "COL_3", AttributeId = "SIZE_1", SaveTable = "PRODUCT_EAV", SaveColumn = "VALUE" },
                 new() { ColumnName = "COL_4", AttributeId = "SIZE_2", SaveTable = "PRODUCT_EAV", SaveColumn = "VALUE" },
                 new() { ColumnName = "COL_5", AttributeId = "SIZE_3", SaveTable = "PRODUCT_EAV", SaveColumn = "VALUE" },
-                new() { ColumnName = "COL_6", AttributeId = "WEIGHT", SaveTable = "PRODUCT_EAV", SaveColumn = "VALUE" }
+                new() { ColumnName = "COL_6", AttributeId = "WEIGHT", SaveTable = "PRODUCT_EAV", SaveColumn = "VALUE" },
+                new() { ColumnName = "COL_7", AttributeId = "CATEGORY", SaveTable = "PRODUCT_MST", SaveColumn = "CATEGORY" }
             };
         }
     }

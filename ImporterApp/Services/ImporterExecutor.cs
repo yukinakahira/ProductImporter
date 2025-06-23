@@ -72,6 +72,7 @@ namespace ImporterApp
 
                 Logger.Info("=== Product Summary ===");
                 Logger.Info($"ProductCode : {product.ProductCode}");
+                Logger.Info($"category : {product.category}");
                 Logger.Info($"BrandId     : {product.BrandId}");
                 Logger.Info($"ProductName : {product.ProductName}");
 
