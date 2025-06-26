@@ -19,17 +19,7 @@ namespace ImporterApp
                 Logger.Info($" - {formattedRow}");
             }
 
-            // ユースジIDを使ってルールを取得    
-            var ruleRepo = new InMemoryRuleRepository();
-            var ruleDetails = ruleRepo.GetRules(userScenarioId);
-
-            Logger.Info("[INFO] Mapping Rules Loaded :");
-            foreach (var rule in ruleDetails)
-            {
-                Logger.Info($" - ColumnName: {rule.ColumnName}, AttributeId: {rule.AttributeId}, SaveTable: {rule.SaveTable}, SaveColumn: {rule.SaveColumn}");
-            }
-
-            // ステップ④ モデルにマッピング（ルールに従い Product オブジェクトへ変換）
+            // 旧有的InMemoryRuleRepository和规则日志全部移除，直接依赖NewImportService
             var importService = new ImportService();
 
             foreach (var row in stagingData)
