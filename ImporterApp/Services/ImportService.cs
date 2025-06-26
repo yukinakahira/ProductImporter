@@ -9,84 +9,86 @@ namespace ImporterApp.Services
     // ステージングデータとマッピングルールのマッチング
     public class ImportService
     {
-        private readonly List<NewAttributeMeaningRule> _rules;
-        private readonly List<AttributeMeaningRule> _meaningRules;
-        private readonly RuleEngine _ruleEngine;
+        private readonly IRuleEngine _ruleEngine;
 
-        public ImportService()
+        public ImportService(IRuleEngine ruleEngine)
         {
-            // CsvLoaderUtilでルールと意味ルールを読み込む
-            // ルールはrules.csv、意味ルールはmeaning_rules.csvから読み込み
-            var csvPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "rules.csv");
-            _rules = CsvLoaderUtil.LoadFromCsv(csvPath, cols =>
-                cols.Length < 14 ? null : new NewAttributeMeaningRule {
-                    RuleId = cols[3],
-                    ConditionSeq = int.TryParse(cols[4], out var seq) ? seq : 0,
-                    ColumnIndex = int.TryParse(cols[5], out var idx) ? idx : 0,
-                    Operator = cols[6],
-                    CompareValue = cols[7],
-                    Logic = cols[8],
-                    OutType = cols[9],
-                    ResultValue = cols[10],
-                    TargetTable = cols[11],
-                    TargetColumn = cols[12],
-                    ItemId = cols[13]
-                }).Where(x => x != null).ToList();
-            var meaningCsvPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "meaning_rules.csv");
-            _meaningRules = CsvLoaderUtil.LoadFromCsv(meaningCsvPath, cols =>
-                cols.Length < 3 ? null : new AttributeMeaningRule {
-                    AttributeId = cols[0],
-                    Usage = cols[1],
-                    MappedAttributeId = cols[2]
-                }).Where(x => x != null).ToList();
-            _ruleEngine = new RuleEngine(_rules);
+            _ruleEngine = ruleEngine;
         }
 
         // staging.csvの1行を処理し、Productオブジェクトを返す
         // userScenarioIdは将来の拡張用、現在は使用しない
         public Product ProcessRow(Dictionary<string, string> rowData, string userScenarioId)
         {
-            var ruleDetails = _rules; // userScenarioIdでフィルタリング可能
-            var product = new Product();
-
-            // 先取ProductCode、BrandId、ProductName
-            // これらはPRODUCT_MSTテーブルに直接マッピングされる
-            var productCodeRule = ruleDetails.FirstOrDefault(r => r.ItemId == "PRODUCT_CODE" && r.TargetTable == "PRODUCT_MST");
-            if (productCodeRule != null && rowData.TryGetValue(productCodeRule.TargetColumn, out var productCodeValue))
-                product.ProductCode = productCodeValue;
-            var brandIdRule = ruleDetails.FirstOrDefault(r => r.ItemId == "BRAND_ID" && r.TargetTable == "PRODUCT_MST");
-            if (brandIdRule != null && rowData.TryGetValue(brandIdRule.TargetColumn, out var brandIdValue))
-                product.BrandId = brandIdValue;
-            var productNameRule = ruleDetails.FirstOrDefault(r => r.ItemId == "PRODUCT_NAME" && r.TargetTable == "PRODUCT_MST");
-            if (productNameRule != null && rowData.TryGetValue(productNameRule.TargetColumn, out var productNameValue))
-                product.ProductName = productNameValue;
-
-            // ステータスのマッピング
-            if (rowData.TryGetValue("COL_7", out var directCategoryValue))
-                product.category = directCategoryValue;
-            else
+            try
             {
-                var categoryRule = ruleDetails.FirstOrDefault(r => r.ItemId == "CATEGORY" && r.TargetTable == "PRODUCT_MST");
-                if (categoryRule != null && rowData.TryGetValue(categoryRule.TargetColumn, out var categoryValue))
-                    product.category = categoryValue;
-            }
+                var product = new Product();
 
-            // 属性のマッピング
-            foreach (var rule in ruleDetails)
-            {
-                if (!rowData.TryGetValue(rule.TargetColumn, out var value)) continue;
-                if (rule.TargetTable == "PRODUCT_MST") continue;
-                if (rule.TargetTable == "PRODUCT_EAV")
+                foreach (var rule in _ruleEngine.Rules)
                 {
-                    var mappedId = RuleEngine.MapAttributeId(rule.ItemId, product.category, _meaningRules);
-                    product.Attributes.Add(new ProductAttribute
+                    // 取得対象カラム
+                    var col = rule.TargetColumn;
+                    var outType = rule.OutType;
+                    var table = rule.TargetTable;
+                    var itemId = rule.ItemId;
+                    var resultValue = rule.ResultValue;
+                    string value = null;
+
+                    // Fixed: 入力値をそのまま
+                    if (outType == "Fixed" || outType == "そのまま登録")
                     {
-                        AttributeId = mappedId,
-                        Value = value
-                    });
+                        rowData.TryGetValue(col, out value);
+                        value ??= string.Empty;
+                        if (table == "PRODUCT_MST")
+                        {
+                            // 主属性
+                            if (itemId == "PRODUCT_CODE") product.ProductCode = value;
+                            else if (itemId == "BRAND_ID") product.BrandId = value;
+                            else if (itemId == "PRODUCT_NAME") product.ProductName = value;
+                            else if (col == "category" || itemId == "CATEGORY" || col == "COL_7") product.category = value;
+                            // 追加のPRODUCT_MST属性があればここに
+                        }
+                        else if (table == "PRODUCT_EAV")
+                        {
+                            var mappedId = _ruleEngine.MapAttributeId(itemId, product.category);
+                            product.Attributes.Add(new ProductAttribute
+                            {
+                                AttributeId = mappedId,
+                                Value = value
+                            });
+                        }
+                        Logger.Info($"[RULE:{rule.RuleId}] FIXED: {itemId} ← {value} (from {col})");
+                    }
+                    // Transform: 結果値をセット
+                    else if (outType == "Transform" || outType == "変換して登録")
+                    {
+                        value = resultValue;
+                        if (table == "PRODUCT_MST")
+                        {
+                            if (itemId == "PRODUCT_CODE") product.ProductCode = value;
+                            else if (itemId == "BRAND_ID") product.BrandId = value;
+                            else if (itemId == "PRODUCT_NAME") product.ProductName = value;
+                            else if (col == "category" || itemId == "CATEGORY") product.category = value;
+                        }
+                        else if (table == "PRODUCT_EAV")
+                        {
+                            var mappedId = _ruleEngine.MapAttributeId(itemId, product.category);
+                            product.Attributes.Add(new ProductAttribute
+                            {
+                                AttributeId = mappedId,
+                                Value = value
+                            });
+                        }
+                        Logger.Info($"[RULE:{rule.RuleId}] TRANSFORM: {itemId} ← {value} (from {col})");
+                    }
                 }
+                return product;
             }
-            return product;
+            catch (Exception ex)
+            {
+                Logger.Info($"[FATAL] ImportService.ProcessRow 例外: {ex.Message}\n{ex.StackTrace}");
+                throw;
+            }
         }
     }
 }
