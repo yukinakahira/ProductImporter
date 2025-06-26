@@ -19,7 +19,7 @@ namespace ImporterApp
                 Logger.Info($" - {formattedRow}");
             }
 
-            // 旧有的InMemoryRuleRepository和规则日志全部移除，直接依赖NewImportService
+            //行の順でステージングデータを処理
             var importService = new ImportService();
 
             foreach (var row in stagingData)
@@ -30,7 +30,7 @@ namespace ImporterApp
                 if (errors.Any())
                 {
                     foreach (var err in errors)
-                        Logger.Info($"⚠️ Validation: {err}");
+                        Logger.Info($"Validation: {err}");
                     continue;
                 }
 

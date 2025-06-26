@@ -15,7 +15,8 @@ namespace ImporterApp.Services
 
         public ImportService()
         {
-            // 规则和meaning规则用CsvLoaderUtil加载
+            // CsvLoaderUtilでルールと意味ルールを読み込む
+            // ルールはrules.csv、意味ルールはmeaning_rules.csvから読み込み
             var csvPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "rules.csv");
             _rules = CsvLoaderUtil.LoadFromCsv(csvPath, cols =>
                 cols.Length < 14 ? null : new NewAttributeMeaningRule {
@@ -41,14 +42,15 @@ namespace ImporterApp.Services
             _ruleEngine = new RuleEngine(_rules);
         }
 
-        // staging.csv等数据行读取建议在外部用CsvLoader.LoadCsv
-        // 这里只处理业务映射
+        // staging.csvの1行を処理し、Productオブジェクトを返す
+        // userScenarioIdは将来の拡張用、現在は使用しない
         public Product ProcessRow(Dictionary<string, string> rowData, string userScenarioId)
         {
-            var ruleDetails = _rules; // 可根据userScenarioId过滤
+            var ruleDetails = _rules; // userScenarioIdでフィルタリング可能
             var product = new Product();
 
-            // 主属性赋值
+            // 先取ProductCode、BrandId、ProductName
+            // これらはPRODUCT_MSTテーブルに直接マッピングされる
             var productCodeRule = ruleDetails.FirstOrDefault(r => r.ItemId == "PRODUCT_CODE" && r.TargetTable == "PRODUCT_MST");
             if (productCodeRule != null && rowData.TryGetValue(productCodeRule.TargetColumn, out var productCodeValue))
                 product.ProductCode = productCodeValue;
@@ -59,7 +61,7 @@ namespace ImporterApp.Services
             if (productNameRule != null && rowData.TryGetValue(productNameRule.TargetColumn, out var productNameValue))
                 product.ProductName = productNameValue;
 
-            // 优先直接从COL_7赋值category
+            // ステータスのマッピング
             if (rowData.TryGetValue("COL_7", out var directCategoryValue))
                 product.category = directCategoryValue;
             else
@@ -69,7 +71,7 @@ namespace ImporterApp.Services
                     product.category = categoryValue;
             }
 
-            // 属性映射
+            // 属性のマッピング
             foreach (var rule in ruleDetails)
             {
                 if (!rowData.TryGetValue(rule.TargetColumn, out var value)) continue;
