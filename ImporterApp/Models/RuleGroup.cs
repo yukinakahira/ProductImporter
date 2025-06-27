@@ -1,6 +1,6 @@
 namespace ImporterApp.Models
 {
-    // 条件信息
+    // 
     public class RuleCondition
     {
         public int ConditionSeq { get; set; }

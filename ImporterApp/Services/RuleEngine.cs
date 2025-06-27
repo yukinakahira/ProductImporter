@@ -45,7 +45,49 @@ namespace ImporterApp.Services
                     ItemId = cols[13]
                 }).Where(x => x != null).ToList();
 
+            // 输出所有原始规则（结构化、分行、带标签）
+            Logger.Info("========== [RULES] Raw rules loaded from CSV ==========");
+            foreach (var rule in rawRules)
+            {
+                Logger.Info($"--- Rule ---");
+                Logger.Info($"  RuleId        : {rule.RuleId}");
+                Logger.Info($"  ItemId        : {rule.ItemId}");
+                Logger.Info($"  TargetTable   : {rule.TargetTable}");
+                Logger.Info($"  TargetColumn  : {rule.TargetColumn}");
+                Logger.Info($"  OutType       : {rule.OutType}");
+                Logger.Info($"  ResultValue   : {rule.ResultValue}");
+                Logger.Info($"  ConditionSeq  : {rule.ConditionSeq}");
+                Logger.Info($"  ColumnIndex   : {rule.ColumnIndex}");
+                Logger.Info($"  Operator      : {rule.Operator}");
+                Logger.Info($"  CompareValue  : {rule.CompareValue}");
+                Logger.Info($"  Logic         : {rule.Logic}");
+            }
+            Logger.Info("======================================================");
+
             Rules = GroupRules(rawRules);
+
+            // 输出所有分组后的规则组（结构化、分行、带标签）
+            Logger.Info("========== [RULE GROUPS] Grouped rules ==========");
+            foreach (var group in Rules)
+            {
+                Logger.Info($"--- RuleGroup ---");
+                Logger.Info($"  RuleId        : {group.RuleId}");
+                Logger.Info($"  ItemId        : {group.ItemId}");
+                Logger.Info($"  TargetTable   : {group.TargetTable}");
+                Logger.Info($"  TargetColumn  : {group.TargetColumn}");
+                Logger.Info($"  OutType       : {group.OutType}");
+                Logger.Info($"  ResultValue   : {group.ResultValue}");
+                Logger.Info($"  [Conditions]  :");
+                foreach (var cond in group.Conditions)
+                {
+                    Logger.Info($"    - Seq        : {cond.ConditionSeq}");
+                    Logger.Info($"      ColIdx     : {cond.ColumnIndex}");
+                    Logger.Info($"      Operator   : {cond.Operator}");
+                    Logger.Info($"      CompareVal : {cond.CompareValue}");
+                    Logger.Info($"      Logic      : {cond.Logic}");
+                }
+            }
+            Logger.Info("===============================================");
 
             // 意味マッピングルール読み込み
             MeaningRules = CsvLoaderUtil.LoadFromCsv(meaningRulesPath, cols =>
