@@ -6,25 +6,30 @@ using ImporterApp.Infrastructure;
 
 namespace ImporterApp.Services
 {
-
+    /// <summary>
+    /// ルールエンジンのインターフェース
+    /// </summary>
     public interface IRuleEngine
     {
-        List<NewAttributeMeaningRule> Rules { get; }
+        List<RuleGroup> Rules { get; }
         List<AttributeMeaningRule> MeaningRules { get; }
         void MapMainProperties(Product product, Dictionary<string, string> rowData);
         string MapAttributeId(string itemId, string category);
+        bool EvaluateRule(RuleGroup rule, Dictionary<string, string> rowData);
     }
 
-    public class CsvRuleEngine : IRuleEngine
+    /// <summary>
+    /// CSVベースのルールエンジン実装
+    /// </summary>
+    public class RuleEngine : IRuleEngine
     {
-        public List<NewAttributeMeaningRule> Rules { get; }
+        public List<RuleGroup> Rules { get; }
         public List<AttributeMeaningRule> MeaningRules { get; }
 
-        // コンストラクタでCSVファイルからルールを読み込む
-        // rulesPath: 新属性の意味ルールCSVファイルのパス
-        public CsvRuleEngine(string rulesPath, string meaningRulesPath)
+        public RuleEngine(string rulesPath, string meaningRulesPath)
         {
-            Rules = CsvLoaderUtil.LoadFromCsv(rulesPath, cols =>
+            // ルールCSV読み込み
+            var rawRules = CsvLoaderUtil.LoadFromCsv(rulesPath, cols =>
                 cols.Length < 14 ? null : new NewAttributeMeaningRule
                 {
                     RuleId = cols[3],
@@ -39,6 +44,10 @@ namespace ImporterApp.Services
                     TargetColumn = cols[12],
                     ItemId = cols[13]
                 }).Where(x => x != null).ToList();
+
+            Rules = GroupRules(rawRules);
+
+            // 意味マッピングルール読み込み
             MeaningRules = CsvLoaderUtil.LoadFromCsv(meaningRulesPath, cols =>
                 cols.Length < 3 ? null : new AttributeMeaningRule
                 {
@@ -48,113 +57,118 @@ namespace ImporterApp.Services
                 }).Where(x => x != null).ToList();
         }
 
-        // 主属性（ProductCode、BrandId、ProductName）をマッピング
-        // rowData: ステージングデータの行データ（Dictionary形式）
+        // ルールをRuleGroup単位にまとめる
+        private List<RuleGroup> GroupRules(List<NewAttributeMeaningRule> rules)
+        {
+            var grouped = new List<RuleGroup>();
+            var currentGroup = new RuleGroup();
+
+            foreach (var rule in rules.OrderBy(r => r.RuleId).ThenBy(r => r.ConditionSeq))
+            {
+                var isNewGroup = string.IsNullOrEmpty(currentGroup.RuleId) || currentGroup.RuleId != rule.RuleId;
+
+                if (isNewGroup || currentGroup.Conditions.Count == 0)
+                {
+                    currentGroup = new RuleGroup
+                    {
+                        RuleId = rule.RuleId,
+                        OutType = rule.OutType,
+                        ResultValue = rule.ResultValue,
+                        TargetTable = rule.TargetTable,
+                        TargetColumn = rule.TargetColumn,
+                        ItemId = rule.ItemId,
+                        Conditions = new List<RuleCondition>()
+                    };
+                }
+
+                currentGroup.Conditions.Add(new RuleCondition
+                {
+                    ConditionSeq = rule.ConditionSeq,
+                    ColumnIndex = rule.ColumnIndex,
+                    Operator = rule.Operator,
+                    CompareValue = rule.CompareValue,
+                    Logic = rule.Logic
+                });
+
+                if (string.IsNullOrEmpty(rule.Logic) || rule.Logic == "-")
+                {
+                    grouped.Add(currentGroup);
+                    currentGroup = new RuleGroup();
+                }
+            }
+            return grouped;
+        }
+
+
         public void MapMainProperties(Product product, Dictionary<string, string> rowData)
         {
-            var productCodeRule = Rules.FirstOrDefault(r => r.ItemId == "PRODUCT_CODE" && r.TargetTable == "PRODUCT_MST");
-            if (productCodeRule != null && rowData.TryGetValue(productCodeRule.TargetColumn, out var productCodeValue))
-                product.ProductCode = productCodeValue;
-            var brandIdRule = Rules.FirstOrDefault(r => r.ItemId == "BRAND_ID" && r.TargetTable == "PRODUCT_MST");
-            if (brandIdRule != null && rowData.TryGetValue(brandIdRule.TargetColumn, out var brandIdValue))
-                product.BrandId = brandIdValue;
-            var productNameRule = Rules.FirstOrDefault(r => r.ItemId == "PRODUCT_NAME" && r.TargetTable == "PRODUCT_MST");
-            if (productNameRule != null && rowData.TryGetValue(productNameRule.TargetColumn, out var productNameValue))
-                product.ProductName = productNameValue;
+            var mainKeys = new[]
+            {
+                new { Key = "PRODUCT_CODE", Setter = new Action<string>(v => product.ProductCode = v) },
+                new { Key = "BRAND_ID", Setter = new Action<string>(v => product.BrandId = v) },
+                new { Key = "PRODUCT_NAME", Setter = new Action<string>(v => product.ProductName = v) }
+            };
+
+            foreach (var main in mainKeys)
+            {
+                var rule = Rules.FirstOrDefault(r => r.ItemId == main.Key && r.TargetTable == "PRODUCT_MST");
+                if (rule != null)
+                {
+                    bool hit = EvaluateRule(rule, rowData);
+                    // 用 MapAttributeId 做业务名到物理列名的映射
+                    var mappedCol = MapAttributeId(main.Key, "");
+                    string val = null;
+                    if (!string.IsNullOrEmpty(rule.TargetColumn) && rowData.TryGetValue(rule.TargetColumn, out var v1))
+                        val = v1;
+                    else if (!string.IsNullOrEmpty(mappedCol) && rowData.TryGetValue(mappedCol, out var v2))
+                        val = v2;
+                    else if (rowData.TryGetValue(main.Key, out var v3))
+                        val = v3;
+                    Logger.Info($"[DEBUG] MapMainProperties: key={main.Key}, mappedCol={mappedCol}, rule.TargetColumn={rule.TargetColumn}, EvaluateHit={hit}, value='{val}'");
+                    if (hit)
+                        main.Setter(val ?? string.Empty);
+                }
+                else
+                {
+                    Logger.Info($"[DEBUG] MapMainProperties: key={main.Key}, rule not found");
+                }
+            }
+            Logger.Info($"[DEBUG] Mapped properties for product: {product.ProductCode}, {product.BrandId}, {product.ProductName}");
         }
 
         public string MapAttributeId(string itemId, string category)
         {
+            Logger.Info($"[DEBUG] Mapping attribute: {itemId} with category: {category}");
             return MeaningRules.FirstOrDefault(r => r.AttributeId == itemId && r.Usage == category)?.MappedAttributeId ?? itemId;
         }
-    }
-    
-    public class RuleEngine
-    {
-        private readonly List<NewAttributeMeaningRule> _rules;
 
-        public RuleEngine(List<NewAttributeMeaningRule> rules)
+        public bool EvaluateRule(RuleGroup rule, Dictionary<string, string> rowData)
         {
-            _rules = rules;
-        }
+            bool match = true;
 
-        // ルール適用処理（行データに対してルールを評価し、結果を記録）
-        public void ApplyRules(ProductHistory record)
-        {
-            foreach (var ruleGroup in _rules.GroupBy(r => r.RuleId))
+            foreach (var cond in rule.Conditions)
             {
-                bool match = true;
-
-                foreach (var rule in ruleGroup)
+                string fieldValue = GetFieldValue(cond.ColumnIndex, rowData, rule.TargetColumn);
+                if (!string.IsNullOrEmpty(cond.Operator))
                 {
-                    string fieldValue = null;
-                    // 优先用ChangedFieldValues查找字段值
-                    if (!string.IsNullOrEmpty(rule.TargetColumn) && record.ChangedFieldValues != null && record.ChangedFieldValues.TryGetValue(rule.TargetColumn, out var val))
-                    {
-                        fieldValue = val;
-                    }
-                    else if (rule.ColumnIndex > 0 && rule.ColumnIndex <= record.ChangedFields.Count)
-                    {
-                        // 兼容旧逻辑：如果 ChangedFields 是有序的原始字段值
-                        fieldValue = record.ChangedFields[rule.ColumnIndex - 1];
-                    }
-                    else if (!string.IsNullOrEmpty(rule.TargetColumn) && record.ChangedFields.Contains(rule.TargetColumn))
-                    {
-                        // 如果 ChangedFields 存字段名，则用 TargetColumn 查找
-                        fieldValue = rule.TargetColumn;
-                    }
-                    else
-                    {
-                        Logger.Info($"[WARN] ルール[{rule.RuleId}]の対象列({rule.TargetColumn})がChangedFields/ChangedFieldValuesに存在しません。スキップします。");
-                        continue;
-                    }
-
-                    // Transform の場合は比較演算が必要
-                    if (rule.OutType == "Transform")
-                    {
-                        match &= Evaluate(fieldValue, rule.Operator, rule.CompareValue);
-                        if (!match && rule.Logic == "AND") break;
-                    }
-                }
-
-                if (match)
-                {
-                    var first = ruleGroup.First();
-
-                    // Transform → 条件一致なら ResultValue をセット
-                    if (first.OutType == "Transform")
-                    {
-                        SaveResult(record, first.TargetTable, first.TargetColumn, first.ItemId, first.ResultValue);
-                        Logger.Info($"[RULE:{first.RuleId}] TRANSFORM: {first.ItemId} ← {first.ResultValue} (from {first.TargetColumn})");
-                        // 这里可模拟后续开发需要的操作，如调用API、写DB等
-                    }
-
-                    // Fixed → 比較なしでCSV値をそのままセット
-                    if (first.OutType == "Fixed")
-                    {
-                        string fieldValue = null;
-                        if (!string.IsNullOrEmpty(first.TargetColumn) && record.ChangedFieldValues != null && record.ChangedFieldValues.TryGetValue(first.TargetColumn, out var val))
-                        {
-                            fieldValue = val;
-                        }
-                        else if (first.ColumnIndex > 0 && first.ColumnIndex <= record.ChangedFields.Count)
-                        {
-                            fieldValue = record.ChangedFields[first.ColumnIndex - 1];
-                        }
-                        else if (!string.IsNullOrEmpty(first.TargetColumn) && record.ChangedFields.Contains(first.TargetColumn))
-                        {
-                            fieldValue = first.TargetColumn;
-                        }
-                        Logger.Info($"[RULE:{first.RuleId}] FIXED: {first.ItemId} ← {fieldValue} (from {first.TargetColumn})");
-                        SaveResult(record, first.TargetTable, first.TargetColumn, first.ItemId, fieldValue);
-                        // 这里可模拟后续开发需要的操作，如调用API、写DB等
-                    }
+                    match &= Evaluate(fieldValue, cond.Operator, cond.CompareValue);
+                    if (!match && cond.Logic == "AND") break;
                 }
             }
+            return match;
         }
 
-        // 演算子に基づいて比較を行う
-        public bool Evaluate(string value, string op, string compare)
+        private string GetFieldValue(int columnIndex, Dictionary<string, string> rowData, string fallbackKey)
+        {
+            if (columnIndex > 0)
+            {
+                var key = rowData.Keys.ElementAtOrDefault(columnIndex - 1);
+                return key != null && rowData.TryGetValue(key, out var val) ? val : string.Empty;
+            }
+            return rowData.TryGetValue(fallbackKey, out var fallbackVal) ? fallbackVal : string.Empty;
+        }
+
+        private bool Evaluate(string value, string op, string compare)
         {
             return op switch
             {
@@ -166,43 +180,6 @@ namespace ImporterApp.Services
                 "TRUE" => value.ToUpper() == "TRUE",
                 _ => false
             };
-        }
-
-        // 結果値を保存（PRODUCT_MST or PRODUCT_EAV に応じて記録形式を変える）
-        private void SaveResult(ProductHistory record, string table, string column, string itemId, string value)
-        {
-            if (table == "PRODUCT_MST")
-            {
-                // 商品マスタの属性値（例：STATUS列）を記録（ここでは汎用的な辞書形式に）
-                record.Result[$"{table}.{column}"] = value;
-            }
-            else if (table == "PRODUCT_EAV")
-            {
-                // EAV形式で itemId に対して値を記録
-                record.Result[itemId] = value;
-            }
-        }
-
-        // 属性IDの意味マッピング（AttributeMeaningMapper.Mapの代替）
-        public static string MapAttributeId(string attributeId, string usage, List<AttributeMeaningRule> rules)
-        {
-            return rules
-                .FirstOrDefault(r => r.AttributeId == attributeId && r.Usage == usage)
-                ?.MappedAttributeId ?? attributeId;
-        }
-
-        // 主属性（ProductCode、BrandId、ProductName）提取
-        public static void MapMainProperties(Product product, Dictionary<string, string> rowData, List<NewAttributeMeaningRule> rules)
-        {
-            var productCodeRule = rules.FirstOrDefault(r => r.ItemId == "PRODUCT_CODE" && r.TargetTable == "PRODUCT_MST");
-            if (productCodeRule != null && rowData.TryGetValue(productCodeRule.TargetColumn, out var productCodeValue))
-                product.ProductCode = productCodeValue;
-            var brandIdRule = rules.FirstOrDefault(r => r.ItemId == "BRAND_ID" && r.TargetTable == "PRODUCT_MST");
-            if (brandIdRule != null && rowData.TryGetValue(brandIdRule.TargetColumn, out var brandIdValue))
-                product.BrandId = brandIdValue;
-            var productNameRule = rules.FirstOrDefault(r => r.ItemId == "PRODUCT_NAME" && r.TargetTable == "PRODUCT_MST");
-            if (productNameRule != null && rowData.TryGetValue(productNameRule.TargetColumn, out var productNameValue))
-                product.ProductName = productNameValue;
         }
     }
 }

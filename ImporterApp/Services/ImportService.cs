@@ -30,58 +30,55 @@ namespace ImporterApp.Services
                     var col = rule.TargetColumn;
                     var outType = rule.OutType;
                     var table = rule.TargetTable;
+                    var column = rule.TargetColumn;
                     var itemId = rule.ItemId;
                     var resultValue = rule.ResultValue;
-                    string value = null;
+                    string value = string.Empty;
 
-                    // Fixed: 入力値をそのまま
+                    // 条件チェック
                     if (outType == "Fixed" || outType == "そのまま登録")
                     {
-                        rowData.TryGetValue(col, out value);
-                        value ??= string.Empty;
-                        if (table == "PRODUCT_MST")
-                        {
-                            // 主属性
-                            if (itemId == "PRODUCT_CODE") product.ProductCode = value;
-                            else if (itemId == "BRAND_ID") product.BrandId = value;
-                            else if (itemId == "PRODUCT_NAME") product.ProductName = value;
-                            else if (col == "category" || itemId == "CATEGORY" || col == "COL_7") product.category = value;
-                            // 追加のPRODUCT_MST属性があればここに
-                        }
-                        else if (table == "PRODUCT_EAV")
-                        {
-                            var mappedId = _ruleEngine.MapAttributeId(itemId, product.category);
-                            product.Attributes.Add(new ProductAttribute
-                            {
-                                AttributeId = mappedId,
-                                Value = value
-                            });
-                        }
-                        Logger.Info($"[RULE:{rule.RuleId}] FIXED: {itemId} ← {value} (from {col})");
+                        // 固定値の場合、直接使用 ResultValue
+                        if (!string.IsNullOrEmpty(col) && rowData.TryGetValue(col, out var tmpVal) && tmpVal != null)
+                            value = tmpVal;
+                        else if (!string.IsNullOrEmpty(itemId) && rowData.TryGetValue(itemId, out var tmpVal2) && tmpVal2 != null)
+                            value = tmpVal2;
+                        else
+                            value = string.Empty;
+                        Logger.Info($"[RULE:{rule.RuleId}] FIXED: {itemId} ← {value} (from {col}) [保存対象テーブル:{table}, 保存対象カラム:{column}]");
                     }
-                    // Transform: 結果値をセット
                     else if (outType == "Transform" || outType == "変換して登録")
                     {
-                        value = resultValue;
-                        if (table == "PRODUCT_MST")
+                        value = resultValue ?? string.Empty;
+                        Logger.Info($"[RULE:{rule.RuleId}] TRANSFORM: {itemId} ← {value} (from {col}) [保存対象テーブル:{table}, 保存対象カラム:{column}]");
+                    }
+                    else
+                    {
+                        continue; // 未知のタイプはスキップ
+                    }
+
+                    // 主属性赋值已移至 MapMainProperties
+                    if (table == "PRODUCT_EAV")
+                    {
+                        var mappedId = _ruleEngine.MapAttributeId(itemId ?? string.Empty, product.Category ?? string.Empty);
+
+                        if (!product.Attributes.Any(a => a.AttributeId == mappedId))
                         {
-                            if (itemId == "PRODUCT_CODE") product.ProductCode = value;
-                            else if (itemId == "BRAND_ID") product.BrandId = value;
-                            else if (itemId == "PRODUCT_NAME") product.ProductName = value;
-                            else if (col == "category" || itemId == "CATEGORY") product.category = value;
-                        }
-                        else if (table == "PRODUCT_EAV")
-                        {
-                            var mappedId = _ruleEngine.MapAttributeId(itemId, product.category);
                             product.Attributes.Add(new ProductAttribute
                             {
                                 AttributeId = mappedId,
-                                Value = value
+                                Value = value ?? string.Empty
                             });
                         }
-                        Logger.Info($"[RULE:{rule.RuleId}] TRANSFORM: {itemId} ← {value} (from {col})");
                     }
+                    // 他のテーブルがあればここに
                 }
+
+                // 主属性赋值应在所有规则处理后
+                Logger.Info($"[DEBUG] 2rowData: {string.Join(", ", rowData.Select(kv => $"[{kv.Key}, {kv.Value}]") )}");
+                _ruleEngine.MapMainProperties(product, rowData);
+                Logger.Info($"[DEBUG]Properties of product: {product.ProductCode}");
+
                 return product;
             }
             catch (Exception ex)

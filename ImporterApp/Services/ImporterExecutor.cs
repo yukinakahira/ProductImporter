@@ -24,7 +24,7 @@ namespace ImporterApp
                 // ルールエンジンの初期化
                 var rulesPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "rules.csv");
                 var meaningRulesPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "meaning_rules.csv");
-                var ruleEngine = new CsvRuleEngine(rulesPath, meaningRulesPath);
+                var ruleEngine = new RuleEngine(rulesPath, meaningRulesPath);
                 var importService = new ImportService(ruleEngine);
 
                 foreach (var row in stagingData)
@@ -41,7 +41,7 @@ namespace ImporterApp
                             continue;
                         }
 
-                        // 差分チェックと履歴保存処理をここに追加
+                        // 差分チェックと履歴保存処理
                         var existing = InMemoryProductRepository.Products.FirstOrDefault(p => p.ProductCode == product.ProductCode);
                         if (existing != null)
                         {
@@ -56,9 +56,6 @@ namespace ImporterApp
                                     ChangedFields = diffs,
                                     ChangedFieldValues = diffValues
                                 };
-                                // 规则应用
-                                var legacyRuleEngine = new RuleEngine(ruleEngine.Rules);
-                                legacyRuleEngine.ApplyRules(history);
                                 InMemoryProductRepository.Histories.Add(history);
                                 Logger.Info($"変更あり → 履歴保存: {string.Join(", ", diffs)}");
                             }
@@ -75,10 +72,10 @@ namespace ImporterApp
                         // 只输出一次summary
                         Logger.Info("=== Product Summary ===");
                         Logger.Info($"ProductCode : {product.ProductCode}");
-                        Logger.Info($"category : {product.category}");
+                        Logger.Info($"Category : {product.Category}");
                         Logger.Info($"BrandId     : {product.BrandId}");
                         Logger.Info($"ProductName : {product.ProductName}");
-                        Logger.Info($"ProductName : {product.State}");
+                        Logger.Info($"State : {product.State}");
 
                         if (product.Attributes.Any())
                         {
