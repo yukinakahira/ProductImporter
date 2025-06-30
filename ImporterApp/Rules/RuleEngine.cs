@@ -19,8 +19,9 @@ namespace ImporterApp.Rules
         {
             // ルールCSV読み込み
             var rawRules = CsvLoaderUtil.LoadFromCsv(rulesPath, cols =>
-                cols.Length < 14 ? null : new NewAttributeMeaningRule
+                cols.Length < 15 ? null : new FileImportRuleDetail
                 {
+                    Usage = cols[1],
                     RuleId = cols[3],
                     ConditionSeq = int.TryParse(cols[4], out var seq) ? seq : 0,
                     ColumnIndex = int.TryParse(cols[5], out var idx) ? idx : 0,
@@ -31,7 +32,8 @@ namespace ImporterApp.Rules
                     ResultValue = cols[10],
                     TargetTable = cols[11],
                     TargetColumn = cols[12],
-                    ItemId = cols[13]
+                    ItemId = cols[13],
+                    Memo = cols[14]
                 }).Where(x => x != null).ToList();
 
             // 输出所有原始规则（结构化、分行、带标签）
@@ -39,6 +41,7 @@ namespace ImporterApp.Rules
             foreach (var rule in rawRules)
             {
                 Logger.Info($"--- Rule ---");
+                Logger.Info($"  Usage         : {rule.Usage}");
                 Logger.Info($"  RuleId        : {rule.RuleId}");
                 Logger.Info($"  ItemId        : {rule.ItemId}");
                 Logger.Info($"  TargetTable   : {rule.TargetTable}");
@@ -50,6 +53,7 @@ namespace ImporterApp.Rules
                 Logger.Info($"  Operator      : {rule.Operator}");
                 Logger.Info($"  CompareValue  : {rule.CompareValue}");
                 Logger.Info($"  Logic         : {rule.Logic}");
+                Logger.Info($"  Memo          : {rule.Memo}");
             }
             Logger.Info("======================================================");
 
@@ -61,11 +65,13 @@ namespace ImporterApp.Rules
             {
                 Logger.Info($"--- RuleGroup ---");
                 Logger.Info($"  RuleId        : {group.RuleId}");
+                Logger.Info($"  Usage         : {group.Usage}");
                 Logger.Info($"  ItemId        : {group.ItemId}");
                 Logger.Info($"  TargetTable   : {group.TargetTable}");
                 Logger.Info($"  TargetColumn  : {group.TargetColumn}");
                 Logger.Info($"  OutType       : {group.OutType}");
                 Logger.Info($"  ResultValue   : {group.ResultValue}");
+                Logger.Info($"  Memo  : {group.Memo}");
                 Logger.Info($"  [Conditions]  :");
                 foreach (var cond in group.Conditions)
                 {
@@ -80,7 +86,7 @@ namespace ImporterApp.Rules
         }
 
         // ルールをRuleGroup単位にまとめる
-        private List<RuleGroup> GroupRules(List<NewAttributeMeaningRule> rules)
+        private List<RuleGroup> GroupRules(List<FileImportRuleDetail> rules)
         {
             var grouped = new List<RuleGroup>();
             var currentGroup = new RuleGroup();
@@ -93,12 +99,14 @@ namespace ImporterApp.Rules
                 {
                     currentGroup = new RuleGroup
                     {
+                        Usage = rule.Usage,
                         RuleId = rule.RuleId,
                         OutType = rule.OutType,
                         ResultValue = rule.ResultValue,
                         TargetTable = rule.TargetTable,
                         TargetColumn = rule.TargetColumn,
                         ItemId = rule.ItemId,
+                        Memo = rule.Memo,
                         Conditions = new List<RuleCondition>()
                     };
                 }
@@ -120,10 +128,10 @@ namespace ImporterApp.Rules
             }
             return grouped;
         }
-        // public string MapAttributeId(string itemId, string category)
-        // {
-        //     Logger.Info($"[DEBUG] Mapping attribute: {itemId} with category: {category}");
-        //     return MeaningRules.FirstOrDefault(r => r.AttributeId == itemId && r.Usage == category)?.MappedAttributeId ?? itemId;
-        // }
+         public string MapAttributeId(string itemId, string category)
+         {
+             Logger.Info($"[DEBUG] Mapping attribute: {itemId} with category: {category}");
+             return MeaningRules.FirstOrDefault(r => r.AttributeId == itemId && r.Usage == category)?.MappedAttributeId ?? itemId;
+         }
     }
 }

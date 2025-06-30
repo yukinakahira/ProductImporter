@@ -2,22 +2,25 @@ namespace ImporterApp.Models;
 // 商品マスタモデル
 public class Product
 {
-<<<<<<< HEAD
-    public string ProductCode { get; set; }= string.Empty;
-    public string BrandId { get; set; }= string.Empty;
-    public string ProductName { get; set; }= string.Empty;
-    public string State { get; set; }= string.Empty;
-    public string ProductType { get; set; }= string.Empty;
-=======
+    //ゴールデン商品コード
     public string GProductCode { get; set; } = string.Empty;
-    public string LinkedProductCode { get; set; } = string.Empty;
+    //グループ会社ID
     public string GpCompanyId { get; set; } = string.Empty;
+    //連携元商品コード
     public string ProductCode { get; set; } = string.Empty;
+    //連携元ブランドID
     public string BrandId { get; set; } = string.Empty;
+    //連携元ブランド名
+    public string BrandName { get; set; } = string.Empty;
+    //商品名
     public string ProductName { get; set; } = string.Empty;
+    //連携元カテゴリID
     public string CategoryId { get; set; } = string.Empty;
+    //連携元カテゴリ名
     public string CategoryName { get; set; } = string.Empty;
+    //商品状態
     public string State { get; set; } = string.Empty;
+    //在庫有無
     public string Zaikoumu { get; set; } = string.Empty;
     //新增
     public string ProductStatusManageCode { get; set; } = string.Empty;
@@ -35,6 +38,8 @@ public class Product
     public string ConsignmentGpCompanyId { get; set; } = string.Empty;
     public string ConsignedProductCode { get; set; } = string.Empty;
     public string UpdateType { get; set; } = string.Empty;
->>>>>>> trunk_20250623
     public List<ProductAttribute> Attributes { get; set; } = new List<ProductAttribute>();
+    public List<GoldenBrand> goldenBrands { get; set; } = new List<GoldenBrand>();
+    public List<GoldenCategory> GoldenCategories { get; set; } = new List<GoldenCategory>();
+    public List<ProductHistory> Histories { get; set; } = new List<ProductHistory>();
 }

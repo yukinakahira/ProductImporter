@@ -7,11 +7,7 @@ class Program
     static void Main()
     {
         var executor = new ImporterExecutor();
-<<<<<<< HEAD
-        executor.Execute("staging.csv", "ユースジID3");//Usage→商品データ取り込み
-=======
-        executor.Execute("staging.csv", "RKE_PRODCT");
->>>>>>> trunk_20250623
+        executor.Execute("staging.csv", "RKE_PRODCT","グループ会社ID");
     }
 }
 

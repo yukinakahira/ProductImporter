@@ -8,17 +8,25 @@ namespace ImporterApp.Rules
     public static class RuleExecutor
     {
         // ルールを実行し、Productモデルに反映する
-        public static Product ExecuteRules(List<RuleGroup> rules, Dictionary<string, string> rowData)
+        public static Product ExecuteRules(List<RuleGroup> rules, Dictionary<string, string> rowData, string userScenarioId)
         {
             Product product = new Product();
             foreach (var rule in rules)
             {
                 // ここは実際の業務ロジックを拡張可能
+                rule.Usage = rule.Usage ?? string.Empty; // Usageがnullの場合は空文字にする
+                if (rule.Usage != userScenarioId)
+                {
+                    // ユーズIDが一致しない場合はスキップ
+                    Logger.Info($"[RULE SKIP] RuleId={rule.RuleId} はuserSceanarioId={userScenarioId}にマッチしないためスキップされました");
+                    continue;
+                }
+                // ルールの適用
                 // Logger.Info($"[RULE EXEC] RuleId={rule.RuleId} が実行され、{rule.TargetTable} の {rule.TargetColumn} が変更されました");
                 // Logger.Info($"CONDITIONS: {rule.Conditions.Count} 条件");
                 // EvaluateConditions(rule.Conditions, rowData);
                 // Logger.Info($"[RULE EXEC] RuleId={rule.RuleId} 条件評価完了");
-                if (EvaluateConditions(rule.Conditions, rowData))
+                if (EvaluateConditions(rule.Conditions, rowData, userScenarioId))
                 {
                     ApplyRuleToProduct(rule, rowData, product);
                 }
@@ -29,9 +37,10 @@ namespace ImporterApp.Rules
         }
 
         // ルール条件の評価メソッド
-        public static bool EvaluateConditions(List<RuleCondition> conditions, Dictionary<string, string> rowData)
+        public static bool EvaluateConditions(List<RuleCondition> conditions, Dictionary<string, string> rowData, string userScenarioId)
         {
-            // Logger.Info($"[RULE EXEC] {conditions.Count}件の条件を評価中");
+            // usage（userScenarioId）が指定されている場合、最初の条件のUsage列（またはRuleGroupのUsage）と一致しなければfalseを返す
+            // ...既存の条件評価ロジック...
             bool? lastResult = null;
             for (int i = 0; i < conditions.Count; i++)
             {
@@ -43,19 +52,15 @@ namespace ImporterApp.Rules
                 if (!string.IsNullOrEmpty(key))
                 {
                     rowData.TryGetValue(key, out value1);
-                    // Logger.Info($"[COND EVAL] VALUE1: {value1}, ColumnIndex: {cond.ColumnIndex}, Operator: {cond.Operator}, CompareValue: {cond.CompareValue}");
                 }
                 bool eval1 = Evaluate(value1, cond.Operator ?? string.Empty, cond.CompareValue ?? string.Empty);
-                //Logger.Info($"[COND EVAL] Seq={cond.ConditionSeq}, Logic={cond.Logic}, Eval1={eval1}");
                 bool eval2 = false;
                 if (condNext != null)
                 {
                     string key2 = condNext.ColumnIndex.ToString();
                     string value2 = string.Empty;
                     if (!string.IsNullOrEmpty(key2)) rowData.TryGetValue(key2, out value2);
-                    // Logger.Info($"[COND EVAL] VALUE2: {value2}, ColumnIndex: {condNext.ColumnIndex}, Operator: {condNext.Operator}, CompareValue: {condNext.CompareValue}");
                     eval2 = Evaluate(value2, condNext.Operator ?? string.Empty, condNext.CompareValue ?? string.Empty);
-                    //Logger.Info($"[COND EVAL] Seq={condNext.ConditionSeq}, Logic={condNext.Logic}, Eval2={eval2}");
                 }
                 switch (cond.Logic)
                 {
@@ -134,7 +139,7 @@ namespace ImporterApp.Rules
                     case "PRODUCT_CODE": product.ProductCode = value ?? string.Empty; break;
                     case "BRAND_ID": product.BrandId = value ?? string.Empty; break;
                     case "PRODUCT_NAME": product.ProductName = value ?? string.Empty; break;
-                    case "CATEGORY": product.Category = value ?? string.Empty; break;
+                    case "CATEGORY": product.CategoryName = value ?? string.Empty; break;
                     case "STATUS": product.State = value ?? string.Empty; break;
                     default: break;
                 }
@@ -143,6 +148,9 @@ namespace ImporterApp.Rules
             {
                 if (!string.IsNullOrEmpty(rule.ItemId) && !product.Attributes.Exists(a => a.AttributeId == rule.ItemId))
                 {
+                    // 在这里进行判断，做一个mapping
+                    // 例如 size1、size2、size3 ，如果有size1——
+                    // 这里可以调用 RuleEngine.MapAttributeId
                     product.Attributes.Add(new ProductAttribute { AttributeId = rule.ItemId, Value = value ?? string.Empty });
                 }
             }

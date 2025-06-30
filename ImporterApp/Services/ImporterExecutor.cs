@@ -8,7 +8,7 @@ namespace ImporterApp
     // メインビジネスロジック
     public class ImporterExecutor
     {
-        public void Execute(string csvPath, string userScenarioId)
+        public void Execute(string csvPath, string userScenarioId,string groupCompanyId)
         {
             try
             {
@@ -24,7 +24,6 @@ namespace ImporterApp
 
                 // ルールエンジンの初期化
                 var rulesPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "rules.csv");
-                var meaningRulesPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "meaning_rules.csv");
                 var ruleEngine = new RuleEngine(rulesPath);
                 var importService = new ImportService(ruleEngine);
 

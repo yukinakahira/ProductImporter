@@ -13,12 +13,14 @@ namespace ImporterApp.Models
     // 规则分组
     public class RuleGroup
     {
+        public string Usage { get; set; }= string.Empty;
         public string? RuleId { get; set; }
         public string? OutType { get; set; }
         public string? ResultValue { get; set; }
         public string? TargetTable { get; set; }
         public string? TargetColumn { get; set; }
         public string? ItemId { get; set; }
+        public string Memo { get; set; }= string.Empty;
         public List<RuleCondition> Conditions { get; set; } = new List<RuleCondition>();
     }
 }
