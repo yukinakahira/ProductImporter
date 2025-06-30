@@ -6,7 +6,7 @@ class Program
     static void Main()
     {
         var executor = new ImporterExecutor();
-        executor.Execute("staging.csv", "ユースジID2");
+        executor.Execute("staging.csv", "ユースジID1");
     }
 }
 
