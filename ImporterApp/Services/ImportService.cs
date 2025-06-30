@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using ImporterApp.Infrastructure;
-using ImporterApp.Rlues;
+using ImporterApp.Rules;
 
 namespace ImporterApp.Services
 {
@@ -11,9 +11,9 @@ namespace ImporterApp.Services
     // ステージングデータとマッピングルールのマッチング
     public class ImportService
     {
-        private readonly IRuleEngine _ruleEngine;
+        private readonly RuleEngine _ruleEngine;
 
-        public ImportService(IRuleEngine ruleEngine)
+        public ImportService(RuleEngine ruleEngine)
         {
             _ruleEngine = ruleEngine;
         }

@@ -1,5 +1,6 @@
 using ImporterApp.Models;
 using ImporterApp.Infrastructure;
+using ImporterApp.Rules;
 using ImporterApp.Services;
 
 namespace ImporterApp
@@ -24,7 +25,7 @@ namespace ImporterApp
                 // ルールエンジンの初期化
                 var rulesPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "rules.csv");
                 var meaningRulesPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "meaning_rules.csv");
-                var ruleEngine = new RuleEngine(rulesPath, meaningRulesPath);
+                var ruleEngine = new RuleEngine(rulesPath);
                 var importService = new ImportService(ruleEngine);
 
                 foreach (var row in stagingData)
@@ -69,10 +70,10 @@ namespace ImporterApp
                             InMemoryProductRepository.Products.Add(product);
                             Logger.Info("新規商品 → 初回登録（履歴保存なし）");
                         }
-                        // 只输出一次summary
+                        // ここで商品情報をログに出力
                         Logger.Info("=== Product Summary ===");
                         Logger.Info($"ProductCode : {product.ProductCode}");
-                        Logger.Info($"Category : {product.Category}");
+                        Logger.Info($"Category : {product.CategoryName}");
                         Logger.Info($"BrandId     : {product.BrandId}");
                         Logger.Info($"ProductName : {product.ProductName}");
                         Logger.Info($"State : {product.State}");
