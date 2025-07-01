@@ -8,13 +8,20 @@ namespace ImporterApp
     // メインビジネスロジック
     public class ImporterExecutor
     {
-        public void Execute(string csvPath, string userScenarioId,string groupCompanyId)
+        public void Execute(string csvPath, string groupCompanyId)
         {
             try
             {
                 Logger.Info("[INFO] グループ会社ID: " + groupCompanyId + " を使用して処理を開始します。");
                 // ステージングCSV読み込み
                 var stagingData = CsvLoader.LoadCsv(csvPath);
+                // ファイル取込ルールでのUsageId取得
+                var usageId = InMemoryFileImportRule.GetUsageId(System.IO.Path.GetFileName(csvPath), groupCompanyId);
+                if (string.IsNullOrEmpty(usageId))
+                {
+                    Logger.Error($"[ERROR] ファイル取込ルールが見つかりません: {csvPath}, グループ会社ID: {groupCompanyId}");
+                    return;
+                }
 
                 Logger.Info("[INFO] CSV Loaded :");
                 foreach (var row in stagingData)
@@ -32,7 +39,7 @@ namespace ImporterApp
                 {
                     try
                     {
-                        var product = importService.ProcessRow(row, userScenarioId);
+                        var product = importService.ProcessRow(row, usageId);
 
                         var errors = ProductValidator.Validate(product);
                         if (errors.Any())
