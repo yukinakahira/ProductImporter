@@ -12,6 +12,7 @@ namespace ImporterApp
         {
             try
             {
+                Logger.Info("[INFO] グループ会社ID: " + groupCompanyId + " を使用して処理を開始します。");
                 // ステージングCSV読み込み
                 var stagingData = CsvLoader.LoadCsv(csvPath);
 

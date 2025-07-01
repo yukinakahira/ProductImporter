@@ -19,7 +19,7 @@ namespace ImporterApp.Rules
         {
             // ルールCSV読み込み
             var rawRules = CsvLoaderUtil.LoadFromCsv(rulesPath, cols =>
-                cols.Length < 15 ? null : new FileImportRuleDetail
+                cols.Length < 15 ? null : new FinalImportRuleDetail
                 {
                     Usage = cols[1],
                     RuleId = cols[3],
@@ -86,7 +86,7 @@ namespace ImporterApp.Rules
         }
 
         // ルールをRuleGroup単位にまとめる
-        private List<RuleGroup> GroupRules(List<FileImportRuleDetail> rules)
+        private List<RuleGroup> GroupRules(List<FinalImportRuleDetail> rules)
         {
             var grouped = new List<RuleGroup>();
             var currentGroup = new RuleGroup();

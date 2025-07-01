@@ -69,10 +69,5 @@ namespace ImporterApp.Models
         /// 変更フィールドの値
         /// </summary>
         public Dictionary<string, string> ChangedFieldValues { get; set; } = new();
-
-        /// <summary>
-        /// 結果の保存先
-        /// </summary>
-        public Dictionary<string, string> Result { get; set; } = new();
     }
 }
