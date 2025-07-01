@@ -8,16 +8,18 @@ namespace ImporterApp.Infrastructure
         // 連携元ブランドID → ゴールデンブランドID
         public static readonly Dictionary<string, string> BrandMap = new Dictionary<string, string>
         {
-            { "KM_BR_001", "GoldenBR001" },
-            { "KM_BR_002", "GoldenBR002" },
-            { "KM_BR_003", "GoldenBR003" },
-            { "KM_BR_004", "GoldenBR004" },
-            { "KM_BR_005", "GoldenBR005" },
-            { "RKE_BR_001", "GoldenBR001" },
-            { "RKE_BR_002", "GoldenBR002" },
-            { "RKE_BR_003", "GoldenBR003" },
-            { "RKE_BR_004", "GoldenBR004" },
-            { "RKE_BR_005", "GoldenBR005" }
+            { "BR001", "GoldenBR001" },
+            { "BR002", "GoldenBR002" },
+            { "BR003", "GoldenBR001" },
+            { "BR004", "GoldenBR002" },
+            { "BR005", "GoldenBR005" }
+        };
+        public static readonly Dictionary<string, string> BeforeBrandMap = new Dictionary<string, string>
+        {
+            { "BR001", "LV" },
+            { "BR002", "CHANNEL" },
+            { "BR003", "ルイヴィトン" },
+            { "BR004", "シャネル" },
         };
     }
 }

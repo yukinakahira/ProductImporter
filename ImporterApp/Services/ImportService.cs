@@ -25,8 +25,13 @@ namespace ImporterApp.Services
             try
             {
                 Product product = new();
+<<<<<<< HEAD
                 Logger.Info($"[IMPORT] 開始: usageId={usageId}, rowData={string.Join(", ", rowData.Select(kv => $"{kv.Key}={kv.Value}"))}");
                 product = RuleExecutor.ExecuteRules(_ruleEngine.Rules, rowData, usageId);
+=======
+                Logger.Info($"[IMPORT] 開始: userScenarioId={userScenarioId}, rowData={string.Join(", ", rowData.Select(kv => $"{kv.Key}={kv.Value}"))}");
+                product = RuleExecutor.ExecuteRules(_ruleEngine.Rules, rowData, userScenarioId);
+>>>>>>> origin/AhmedParvez
                 Logger.Info($"[IMPORT] ProductCode={product.ProductCode}, BrandId={product.BrandId}, ProductName={product.ProductName}, Category={product.CategoryName},State={product.State}, Attributes={string.Join(", ", product.Attributes.Select(a => $"{a.AttributeId}={a.Value}"))}");
                 return product;
             }
@@ -36,5 +41,6 @@ namespace ImporterApp.Services
                 throw;
             }
         }
+        
     }
 }
