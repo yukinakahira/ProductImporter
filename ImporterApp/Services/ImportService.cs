@@ -7,7 +7,7 @@ using ImporterApp.Rules;
 
 namespace ImporterApp.Services
 {
-    
+
     // ステージングデータとマッピングルールのマッチング
     public class ImportService
     {
@@ -36,5 +36,6 @@ namespace ImporterApp.Services
                 throw;
             }
         }
+        
     }
 }
