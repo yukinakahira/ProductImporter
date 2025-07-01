@@ -11,12 +11,14 @@ namespace ImporterApp.Infrastructure
             {
                 ProductCode = "P002",
                 BrandId = "BR000",
+                CategoryName = "バッグ",
                 ProductName = "トートバッグ旧"
             },
             new Product
             {
                 ProductCode = "P003",
                 BrandId = "BR003",
+                CategoryName = "バッグ",
                 ProductName = "リュック"
             }
         };

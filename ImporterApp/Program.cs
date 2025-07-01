@@ -1,12 +1,13 @@
 ﻿﻿using ImporterApp;
 using ImporterApp.Services;
+using ImporterApp.Rules;
 // メイン処理、起動用
 class Program
 {
     static void Main()
     {
         var executor = new ImporterExecutor();
-        executor.Execute("staging.csv", "ユースジID1");
+        executor.Execute("staging.csv", "RKE_PRODCT","グループ会社ID");
     }
 }
 

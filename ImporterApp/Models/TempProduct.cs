@@ -1,6 +1,6 @@
 namespace ImporterApp.Models;
-// 商品マスタモデル
-public class Product
+// 一時商品マスタモデル
+public class TempProduct
 {
     //ゴールデン商品コード
     public string GProductCode { get; set; } = string.Empty;

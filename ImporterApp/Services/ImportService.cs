@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using ImporterApp.Infrastructure;
-using ImporterApp.Rlues;
+using ImporterApp.Rules;
 
 namespace ImporterApp.Services
 {
@@ -11,9 +11,9 @@ namespace ImporterApp.Services
     // ステージングデータとマッピングルールのマッチング
     public class ImportService
     {
-        private readonly IRuleEngine _ruleEngine;
+        private readonly RuleEngine _ruleEngine;
 
-        public ImportService(IRuleEngine ruleEngine)
+        public ImportService(RuleEngine ruleEngine)
         {
             _ruleEngine = ruleEngine;
         }
@@ -25,9 +25,12 @@ namespace ImporterApp.Services
             try
             {
                 Product product = new();
+                //product.Attributes = new List<ProductAttribute>();
+                //product.
                 Logger.Info($"[IMPORT] 開始: userScenarioId={userScenarioId}, rowData={string.Join(", ", rowData.Select(kv => $"{kv.Key}={kv.Value}"))}");
-                product = RuleExecutor.ExecuteRules(_ruleEngine.Rules, rowData);
-                Logger.Info($"[IMPORT] ProductCode={product.ProductCode}, BrandId={product.BrandId}, ProductName={product.ProductName}, Category={product.Category},State={product.State}, Attributes={string.Join(", ", product.Attributes.Select(a => $"{a.AttributeId}={a.Value}"))}");
+                product = RuleExecutor.ExecuteRules(_ruleEngine.Rules, rowData, userScenarioId);
+                Logger.Info($"[IMPORT] ProductCode={product.ProductCode}, BrandId={product.BrandId}, ProductName={product.ProductName}, Category={product.CategoryName},State={product.State}, Attributes={string.Join(", ", product.Attributes.Select(a => $"{a.AttributeId}={a.Value}"))}");
+                // checkEAV(product);{if get}
                 return product;
             }
             catch (Exception ex)

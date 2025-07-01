@@ -1,13 +1,14 @@
 using ImporterApp.Services;
 using System.Text;
 using System.Linq;
+using ImporterApp.Rules;
 
 namespace ImporterApp.Services
 {
     public static class SqlRule
     {
         // 生成并输出所有规则组的SQL语句
-        public static void OutputRuleSql(IRuleEngine ruleEngine)
+        public static void OutputRuleSql(RuleEngine ruleEngine)
         {
             foreach (var group in ruleEngine.Rules)
             {
