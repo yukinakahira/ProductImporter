@@ -25,12 +25,9 @@ namespace ImporterApp.Services
             try
             {
                 Product product = new();
-                //product.Attributes = new List<ProductAttribute>();
-                //product.
                 Logger.Info($"[IMPORT] 開始: usageId={usageId}, rowData={string.Join(", ", rowData.Select(kv => $"{kv.Key}={kv.Value}"))}");
                 product = RuleExecutor.ExecuteRules(_ruleEngine.Rules, rowData, usageId);
                 Logger.Info($"[IMPORT] ProductCode={product.ProductCode}, BrandId={product.BrandId}, ProductName={product.ProductName}, Category={product.CategoryName},State={product.State}, Attributes={string.Join(", ", product.Attributes.Select(a => $"{a.AttributeId}={a.Value}"))}");
-                // checkEAV(product);{if get}
                 return product;
             }
             catch (Exception ex)
