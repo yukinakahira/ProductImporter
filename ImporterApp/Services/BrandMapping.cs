@@ -1,95 +1,151 @@
-
+using ImporterApp.Infrastructure;
+using ImporterApp.Models;
+using System; // For Logger (assuming it's in System or a base namespace)
+using System.Collections.Generic;
 
 namespace ImporterApp.Services
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using ImporterApp.Infrastructure;
-    using ImporterApp.Models;
-
     // ブランドマッピングサービス
-    public class BrandMapping
+    public class BrandMappingService // クラス名をBrandMappingからBrandMappingServiceに変更し、より責務を明確にしました
     {
-        // // 連携元ブランドID → ゴールデンブランドIDのマッピング
-        // public static Dictionary<string, string> GetBrandMap()
-        // {
-        //     return InMemoryBrandMapping.BrandMap;
-        // }
-
-        // // 連携元ブランドID → ゴールデンブランド名のマッピング
-        // public static Dictionary<string, string> GetBeforeBrandMap()
-        // {
-        //     return InMemoryBrandMapping.BeforeBrandMap;
-        // }
-
-        //TODO
-        // ブランドIDをゴールデンブランドIDにマッピングするメソッド
-        // Product対象から連携元ブランドID（Product.BrandID）を取得する
-        // Product.BrandIDを使って、GetBrandMapの中にGoldenブランドIDとマッピングするメソッドを書いてください
-        //メソッドの名前は BrandMappingClassにする、isMappedのboolean型の引数を受け取る
-        //isMappedがtrueの場合は、GetBrandMapの中にGoldenブランドIDとマッピングする
-        //終わったら、Loggerを書いてください
-        //ProductのBrandIdをGoldenブランドIDに変換する
-        //isMappedがfalseの場合は、GetBrandMapの中にGoldenブランドIDとマッピングしない
-        //Product対象からProductcodeを取得し、Productcodeで対象のデータをModels/ApprovalPending.csに登録する
-        //終わったら、Loggerを書いてください
-
-        // ...existing code...
         /// <summary>
-        /// ブランドIDをゴールデンブランドIDにマッピングするメソッド
+        /// TempProductのBrandIdをゴールデンブランドIDにマッピングするメソッド
         /// </summary>
-        /// <param name="product">対象Product</param>
-        /// <param name="isMapped">マッピングするかどうか</param>
-        /// <param name="approvalPendings">マッピングできなかった場合に追加するリスト</param>
-        public void BrandMappingClass(Product product, bool isMapped, List<ApprovalPending> approvalPendings)
+        public void MapGoldenBrandId(TempProduct tempProduct, bool isMappingEnabled, List<ApprovalPending> approvalPendings)
         {
             var brandMap = InMemoryBrandMapping.BrandMap;
-            // Logger is static, so use its static methods directly
 
-            if (isMapped)
+            if (isMappingEnabled)
             {
-                if (brandMap.TryGetValue(product.BrandId, out var goldenBrandId))
+                if (brandMap.TryGetValue(tempProduct.BrandId, out var goldenBrandId))
                 {
-                    Logger.Info($"[BrandMapping] ProductCode: {product.ProductCode} のBrandId({product.BrandId})をGoldenBrandId({goldenBrandId})にマッピングしました。");
-                    product.BrandId = goldenBrandId;
+                    // マッピング成功：TempProductのGoldenBrandIdプロパティを更新します
+                    Console.WriteLine($"[BrandMapping] TempProductのBrandId({tempProduct.BrandId})をGoldenBrandId({goldenBrandId})にマッピングしました。");
+                    tempProduct.GoldenBrandId = goldenBrandId; // ここを修正：元のBrandIdではなく、GoldenBrandIdプロパティを更新
                 }
                 else
                 {
-                    Logger.Warn($"[BrandMapping] ProductCode: {product.ProductCode} のBrandId({product.BrandId})はマッピングできませんでした。");
+                    // マッピング失敗：承認待ちリストに追加
+                    Console.WriteLine($"[BrandMapping] TempProductのBrandId({tempProduct.BrandId})はマッピングできませんでした。");
                     approvalPendings.Add(new ApprovalPending
                     {
                         PendingType = "BRAND",
-                        OriginalId = product.BrandId,
-                        OriginalName = product.BrandName,
-                        UsageId = product.ProductCode,
+                        OriginalId = tempProduct.BrandId,
+                        OriginalName = tempProduct.BrandName,
+                        UsageId = tempProduct.ProductCode,
                         Remarks = "ブランドIDマッピングなし",
                         CsvData = new Dictionary<string, string>
                         {
-                            { "ProductCode", product.ProductCode },
-                            { "BrandId", product.BrandId },
-                            { "BrandName", product.BrandName }
+                            { "TempProductCode", tempProduct.ProductCode },
+                            { "BrandId", tempProduct.BrandId },
+                            { "BrandName", tempProduct.BrandName }
                         }
                     });
                 }
             }
             else
             {
-                Logger.Info($"[BrandMapping] isMapped=falseのため、ProductCode: {product.ProductCode} のBrandId({product.BrandId})はマッピングしませんでした。");
+                // マッピングが無効な場合：承認待ちリストに追加
+                Console.WriteLine($"[BrandMapping] isMappingEnabled=falseのため、TempProductのBrandId({tempProduct.BrandId})はマッピングしませんでした。");
                 approvalPendings.Add(new ApprovalPending
                 {
                     PendingType = "BRAND",
-                    OriginalId = product.BrandId,
-                    OriginalName = product.BrandName,
-                    UsageId = product.ProductCode,
-                    Remarks = "isMapped=falseのためマッピングせず",
+                    OriginalId = tempProduct.BrandId,
+                    OriginalName = tempProduct.BrandName,
+                    UsageId = tempProduct.ProductCode,
+                    Remarks = "isMappingEnabled=falseのためマッピングせず",
                     CsvData = new Dictionary<string, string>
                     {
-                        { "ProductCode", product.ProductCode },
-                        { "BrandId", product.BrandId },
-                        { "BrandName", product.BrandName }
+                        { "TempProductCode", tempProduct.ProductCode },
+                        { "BrandId", tempProduct.BrandId },
+                        { "BrandName", tempProduct.BrandName }
                     }
                 });
             }
+        }
+    }
+
+    // テスト実行用のクラス
+    public class BrandMappingTest
+    {
+        public static void RunTest()
+        {
+            var approvalPendings = new List<ApprovalPending>();
+            var brandMappingService = new BrandMappingService();
+
+            // 1. マッピング成功テスト (BR001)
+            var tempProduct1 = new TempProduct
+            {
+                ProductCode = "TEST001",
+                BrandId = "BR001",
+                BrandName = "LV"
+            };
+            brandMappingService.MapGoldenBrandId(tempProduct1, true, approvalPendings);
+            Console.WriteLine($"--> 結果: ProductCode={tempProduct1.ProductCode}, GoldenBrandId={tempProduct1.GoldenBrandId}\n");
+
+
+            // 2. マッピング失敗テスト (UNKNOWN)
+            var tempProduct2 = new TempProduct
+            {
+                ProductCode = "TEST002",
+                BrandId = "UNKNOWN",
+                BrandName = "UNKNOWN"
+            };
+            brandMappingService.MapGoldenBrandId(tempProduct2, true, approvalPendings);
+            Console.WriteLine($"--> 結果: ProductCode={tempProduct2.ProductCode}, GoldenBrandId={tempProduct2.GoldenBrandId}\n");
+
+
+            // 3. マッピング成功テスト (BR002) - isMappingEnabledをtrueに変更
+            var tempProduct3 = new TempProduct
+            {
+                ProductCode = "TEST003",
+                BrandId = "BR007",
+                BrandName = "ルイヴィトン"
+            };
+            brandMappingService.MapGoldenBrandId(tempProduct3, true, approvalPendings);
+            Console.WriteLine($"--> 結果: ProductCode={tempProduct3.ProductCode}, GoldenBrandId={tempProduct3.GoldenBrandId}\n");
+
+            // 3. マッピング成功テスト (BR002) - isMappingEnabledをtrueに変更
+            var tempProduct4 = new TempProduct
+            {
+                ProductCode = "TEST004",
+                BrandId = "BR003",
+                BrandName = "シャネル"
+            };
+            brandMappingService.MapGoldenBrandId(tempProduct4, true, approvalPendings);
+            Console.WriteLine($"--> 結果: ProductCode={tempProduct4.ProductCode}, GoldenBrandId={tempProduct4.GoldenBrandId}\n");
+
+            // 3. マッピング成功テスト (BR002) - isMappingEnabledをtrueに変更
+            var tempProduct5 = new TempProduct
+            {
+                ProductCode = "TEST005",
+                BrandId = "BR001",
+                BrandName = "CHANNEL"
+            };
+            brandMappingService.MapGoldenBrandId(tempProduct5, true, approvalPendings);
+            Console.WriteLine($"--> 結果: ProductCode={tempProduct5.ProductCode}, GoldenBrandId={tempProduct5.GoldenBrandId}\n");
+            // 承認待ちリストの結果出力
+            Console.WriteLine("--- 承認待ちリスト ---");
+            if (approvalPendings.Count == 0)
+            {
+                Console.WriteLine("承認待ちアイテムはありません。");
+            }
+            else
+            {
+                foreach (var pending in approvalPendings)
+                {
+                    Console.WriteLine($"[Test] ApprovalPending: ID={pending.OriginalId}, Name={pending.OriginalName}, Remarks={pending.Remarks}");
+                }
+            }
+        }
+    }
+
+    // メインのエントリーポイント
+    class BrandMappingTestEntry
+    {
+        static void Main()
+        {
+            BrandMappingTest.RunTest();
         }
     }
 }
