@@ -25,13 +25,17 @@ namespace ImporterApp.Services
             try
             {
                 Product product = new();
-<<<<<<< HEAD
                 Logger.Info($"[IMPORT] 開始: usageId={usageId}, rowData={string.Join(", ", rowData.Select(kv => $"{kv.Key}={kv.Value}"))}");
                 product = RuleExecutor.ExecuteRules(_ruleEngine.Rules, rowData, usageId);
-=======
-                Logger.Info($"[IMPORT] 開始: userScenarioId={userScenarioId}, rowData={string.Join(", ", rowData.Select(kv => $"{kv.Key}={kv.Value}"))}");
-                product = RuleExecutor.ExecuteRules(_ruleEngine.Rules, rowData, userScenarioId);
->>>>>>> origin/AhmedParvez
+                //BrandMappingServiceを使用して、ProductのBrandIdをゴールデンブランドIDにマッピング
+                var brandMappingService = new BrandMappingService();
+                var approvalPendings = new List<ApprovalPending>();
+                brandMappingService.MapGoldenBrandId(product, true, approvalPendings);
+                // ApprovalPendingを全局リストにも追加
+                foreach (var pending in approvalPendings)
+                {
+                    InMemoryProductRepository.PendingBrands.Add(pending);
+                }
                 Logger.Info($"[IMPORT] ProductCode={product.ProductCode}, BrandId={product.BrandId}, ProductName={product.ProductName}, Category={product.CategoryName},State={product.State}, Attributes={string.Join(", ", product.Attributes.Select(a => $"{a.AttributeId}={a.Value}"))}");
                 return product;
             }

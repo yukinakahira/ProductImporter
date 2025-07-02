@@ -105,6 +105,17 @@ namespace ImporterApp
                         // 行単位のエラーはログに記録し、次の行へ進む
                     }
                 }
+
+                // 全ての処理が完了した後、承認待ちブランドリストを出力
+                if (InMemoryProductRepository.PendingBrands.Count > 0)
+                {
+                    Logger.Info("=== 承認待ちブランドリスト（全件） ===");
+                    foreach (var pending in InMemoryProductRepository.PendingBrands)
+                    {
+                        Logger.Info($"[ApprovalPending] Type={pending.PendingType}, PendingId={pending.PendingId},riginalId={pending.OriginalId}, OriginalName={pending.OriginalName},UsageId={pending.UsageId}, Remarks={pending.Remarks}");
+                    }
+                    Logger.Info("==============================\n");
+                }
             }
             catch (Exception ex)
             {

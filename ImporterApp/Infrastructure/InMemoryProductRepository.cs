@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ImporterApp.Models;
 
 namespace ImporterApp.Infrastructure
@@ -24,11 +25,19 @@ namespace ImporterApp.Infrastructure
         };
 
         public static List<ProductHistory> Histories { get; set; } = new();
-        
+        public static List<ApprovalPending> PendingBrands { get; set; } = new();
+        // PD用の自增カウンタ
+        private static int _pendingIdCounter = 1;
+        public static string GetNextPendingId()
+        {
+            return $"PD{_pendingIdCounter++.ToString("D6")}";
+        }
         public static void Clear()
         {
             Products = new();
             Histories = new();
+            PendingBrands = new();
+            _pendingIdCounter = 1;
         }
     }
 }

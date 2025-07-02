@@ -1,4 +1,4 @@
-using System;
+using ImporterApp.Infrastructure;   
 
 namespace ImporterApp.Models
 {
@@ -10,7 +10,7 @@ namespace ImporterApp.Models
         /// <summary>
         /// UUIDなどの一意な識別子
         /// </summary>
-        public string PendingId { get; set; } = Guid.NewGuid().ToString();
+        public string PendingId { get; set; } = InMemoryProductRepository.GetNextPendingId();
 
         /// <summary>
         /// 対象種別（例：BRAND / CATEGORY）

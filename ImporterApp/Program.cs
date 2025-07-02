@@ -7,7 +7,7 @@ class Program
     static void Main()
     {
         var executor = new ImporterExecutor();
-        executor.Execute("KM伝票.csv", "KM");
+        executor.Execute("RKE伝票.csv", "RKE");
     }
 }
 
