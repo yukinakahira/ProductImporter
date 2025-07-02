@@ -21,7 +21,7 @@ namespace ImporterApp.Infrastructure
 
                 for (int j = 0; j < headers.Length; j++)
                 {
-                    row[headers[j]] = values[j];
+                    row[headers[j]] = j < values.Length ? values[j] : "";
                 }
 
                 result.Add(row);

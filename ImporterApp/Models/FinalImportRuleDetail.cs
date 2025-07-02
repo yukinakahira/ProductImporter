@@ -16,6 +16,7 @@ namespace ImporterApp.Models
         public string TargetTable { get; set; } = string.Empty;
         public string TargetColumn { get; set; } = string.Empty;
         public string ItemId { get; set; } = string.Empty;
+        public string Priority { get; set; }= string.Empty;
         public string Memo { get; set; } = string.Empty;
     }
 }

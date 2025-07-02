@@ -8,7 +8,7 @@ namespace ImporterApp.Infrastructure
         //ブランドIDからブランド名を取得するため
         public static readonly Dictionary<string, string> GoldenBrandNameMap = new Dictionary<string, string>
         {
-            { "GoldenBR001", "ルイ・ヴィトン" },
+            { "GoldenBR001", "Louisvuitton" },
             { "GoldenBR002", "Chanel" },
             { "GoldenBR003", "Hermès" },
             { "GoldenBR004", "Gucci" },
