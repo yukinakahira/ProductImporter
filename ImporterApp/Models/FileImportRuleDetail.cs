@@ -1,9 +1,9 @@
 namespace ImporterApp.Models
 {
-    // ファイル取込ルール詳細モデル
+    // ファイル取込ルール詳細
     public class FileImportRuleDetail
     {
-        public string UseCaseId { get; set; } = string.Empty;
+        public string UsageId { get; set; } = string.Empty;
         public string ColumnName { get; set; } = string.Empty;
         public string AttributeId { get; set; } = string.Empty;
         public string ValuePrefix { get; set; } = string.Empty;
