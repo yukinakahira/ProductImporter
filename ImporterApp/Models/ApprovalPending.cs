@@ -60,21 +60,21 @@ namespace ImporterApp.Models
         /// <summary>
         /// The original CSV data for reference.
         /// </summary>
-        public Dictionary<string, string> CsvData { get; set; } = new();
+        // public Dictionary<string, string> CsvData { get; set; } = new();
 
         /// <summary>
         /// Indicates whether this entry has been reviewed/checked.
         /// </summary>
-        public bool IsChecked { get; set; } = false;
+        // public bool IsChecked { get; set; } = false;
 
-        /// <summary>
-        /// ブランドIDがない場合のフラグ
-        /// </summary>
-        public bool IsBrandIdMissing => string.IsNullOrEmpty(OriginalId) && PendingType == "BRAND";
+        // /// <summary>
+        // /// ブランドIDがない場合のフラグ
+        // /// </summary>
+        // public bool IsBrandIdMissing => string.IsNullOrEmpty(OriginalId) && PendingType == "BRAND";
 
-        /// <summary>
-        /// ブランド名がない場合のフラグ
-        /// </summary>
-        public bool IsBrandNameMissing => string.IsNullOrEmpty(OriginalName) && PendingType == "BRAND";
+        // /// <summary>
+        // /// ブランド名がない場合のフラグ
+        // /// </summary>
+        // public bool IsBrandNameMissing => string.IsNullOrEmpty(OriginalName) && PendingType == "BRAND";
     }
 }

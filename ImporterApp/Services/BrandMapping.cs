@@ -37,12 +37,12 @@ namespace ImporterApp.Services
                         OriginalName = Product.BrandName,
                         UsageId = Product.ProductCode,
                         Remarks = "ブランドIDマッピングなし",
-                        CsvData = new Dictionary<string, string>
-                        {
-                            { "TempProductCode", Product.ProductCode },
-                            { "BrandId", Product.BrandId },
-                            { "BrandName", Product.BrandName }
-                        }
+                        // CsvData = new Dictionary<string, string>
+                        // {
+                        //     { "TempProductCode", Product.ProductCode },
+                        //     { "BrandId", Product.BrandId },
+                        //     { "BrandName", Product.BrandName }
+                        // }
                     });
                 }
             }
@@ -59,12 +59,12 @@ namespace ImporterApp.Services
                     OriginalName = Product.BrandName,
                     UsageId = Product.ProductCode,
                     Remarks = "isMappingEnabled=falseのためマッピングせず",
-                    CsvData = new Dictionary<string, string>
-                    {
-                        { "TempProductCode", Product.ProductCode },
-                        { "BrandId", Product.BrandId },
-                        { "BrandName", Product.BrandName }
-                    }
+                    // CsvData = new Dictionary<string, string>
+                    // {
+                    //     { "TempProductCode", Product.ProductCode },
+                    //     { "BrandId", Product.BrandId },
+                    //     { "BrandName", Product.BrandName }
+                    // }
                 });
             }
         }

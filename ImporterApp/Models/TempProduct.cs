@@ -2,8 +2,11 @@ namespace ImporterApp.Models;
 // 一時商品マスタモデル
 public class TempProduct
 {
-// ... other properties ...
+    //ゴールデンブランドID
     public string GoldenBrandId { get; set; } = string.Empty;
+
+    //ゴールデンカテゴリID
+    public string GoldenCategoryId { get; set; } = string.Empty;
     //ゴールデン商品コード
     public string GProductCode { get; set; } = string.Empty;
     //グループ会社ID
