@@ -27,10 +27,15 @@ namespace ImporterApp.Services
                 Product product = new();
                 Logger.Info($"[IMPORT] 開始: usageId={usageId}, rowData={string.Join(", ", rowData.Select(kv => $"{kv.Key}={kv.Value}"))}");
                 product = RuleExecutor.ExecuteRules(_ruleEngine.Rules, rowData, usageId);
-                //在这里使用Services/MappingExecutor.cs里面的mapping逻辑
+                // マッピングロジックの実行
                 var mappingExecutor = new MappingExecutor();
-                var approvalPendings = mappingExecutor.ExecuteBrandMapping(product);
-                InMemoryProductRepository.PendingBrands.AddRange(approvalPendings);
+                //ブランドマッピング
+                var brandPendings = mappingExecutor.ExecuteBrandMapping(product);
+                InMemoryProductRepository.PendingBrands.AddRange(brandPendings);
+                // カテゴリマッピング
+                var categoryPendings = mappingExecutor.ExeuteCategoryMapping(product);
+                InMemoryProductRepository.PendingBrands.AddRange(categoryPendings);
+                
                 return product;
             }
             catch (Exception ex)

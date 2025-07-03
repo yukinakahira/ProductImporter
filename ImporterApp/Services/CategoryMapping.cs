@@ -11,11 +11,11 @@ namespace ImporterApp.Services
         /// <summary>
         /// TempProductのBrandIdをゴールデンブランドIDにマッピングするメソッド
         /// </summary>
-        public bool CategoryMapping(string brand)
+        public bool CategoryMapping(string categoryId)
         {
             // カテゴリIDマッピング辞書を参照し、存在すればtrue、なければfalseを返す
             var categoryMap = InMemoryCategoryMapping.CategoryMap;
-            return categoryMap.ContainsKey(brand);
+            return categoryMap.ContainsKey(categoryId);
         }
     }
 }

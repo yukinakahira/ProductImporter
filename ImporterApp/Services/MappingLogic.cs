@@ -62,13 +62,6 @@ namespace YourProject.Services
         }
 
 
-
-        private bool CategoryMapping(string category)
-        {
-            // TODO: 实现类别映射逻辑
-            return false;
-        }
-
         private bool ItemListMapping(string itemCode)
         {
             // TODO: 实现物品列表映射逻辑
