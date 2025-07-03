@@ -1,34 +1,68 @@
-using System.IO;
-using System.Linq;
-using ImporterApp;
-using ImporterApp.Models;
-using ImporterApp.Infrastructure; 
 using Xunit;
+using Xunit.Abstractions;
+using System.Collections.Generic;
+using ImporterApp.Models;
+using ImporterApp.Services;
+// Make sure to use the namespace where your mock data is located
+using ImporterApp.Tests; 
 
 public class ImporterExecutorTests
 {
+    private readonly ITestOutputHelper _output;
+
+    public ImporterExecutorTests(ITestOutputHelper output)
+    {
+        _output = output;
+    }
+
+    // Test Case 1: A brand ID that exists IS successfully mapped.
     [Fact]
-    public void Execute_ShouldImportCsvDataCorrectly()
+    public void MapGoldenBrandId_ShouldSucceed_WhenBrandIdExists()
     {
         // Arrange
-        InMemoryProductRepository.Products.Clear(); // テスト開始前に初期化
-        var csvPath = "test_data.csv";
-        var scenarioId = "ユースジID1";
-
-        var executor = new ImporterExecutor();
+        var brandMappingService = new BrandMappingService();
+        var approvalPendings = new List<ApprovalPending>();
+        // Using "BR001" which exists in our mock InMemoryBrandMapping
+        Product product = new() { BrandId = "BR001", BrandName = "LV" };
 
         // Act
-        executor.Execute(csvPath, scenarioId);
+        // isMappingEnabled is true, so it should find the mapping
+        brandMappingService.MapGoldenBrandId(product, approvalPendings);
+
+        // Log the result to the test output
+        _output.WriteLine($"Testing successful mapping for BrandId: {product.BrandId}");
+        _output.WriteLine($"Pending list count: {approvalPendings.Count}");
 
         // Assert
-        Assert.Equal(3, InMemoryProductRepository.Products.Count);
+        // The BrandId should be updated to the "golden" one from our mock data.
+        Assert.Equal("GoldenBR001", product.BrandId);
+        // No items should be added to the pending list on success.
+        Assert.Empty(approvalPendings); 
+    }
 
-        var product = InMemoryProductRepository.Products.First(p => p.ProductCode == "P001");
-        Assert.Equal("BR001", product.BrandId);
-        Assert.Equal("ショルダーバッグ", product.ProductName);
-        Assert.Equal(4, product.Attributes.Count); // EAV項目数
+    // Test Case 2: A product IS ADDED to the pending list if mapping is disabled.
+    [Fact]
+    public void MapGoldenBrandId_ShouldAddToPending_WhenMappingIsDisabled()
+    {
+        // Arrange
+        var brandMappingService = new BrandMappingService();
+        var approvalPendings = new List<ApprovalPending>();
+        Product product = new() { BrandId = "BR006", BrandName = "Unknown Brand" };
+        // var product = new Product { BrandId = "GoldenBR001", BrandName = "LV" };
 
-        var size1 = product.Attributes.FirstOrDefault(a => a.AttributeId == "SIZE_1");
-        Assert.Equal("13", size1?.Value);
+        // Act
+        // isMappingEnabled is false, so it should be added to the pending list.
+        brandMappingService.MapGoldenBrandId(product,  approvalPendings);
+
+        // Log the result to the test output
+        _output.WriteLine($"Testing disabled mapping for BrandId: {product.BrandId}");
+        _output.WriteLine($"Pending list count: {approvalPendings.Count}");
+
+        // Assert
+        // The list should now contain exactly one item.
+        Assert.Single(approvalPendings);
+        // The original ID in the pending item should be "BR007".
+        Assert.Equal("BR007", approvalPendings[0].OriginalId);
+        // Assert.Equal("GoldenBR001", product.BrandId);
     }
 }

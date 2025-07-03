@@ -1,10 +1,15 @@
 using ImporterApp.Infrastructure;
 using ImporterApp.Models;
+<<<<<<< HEAD
 using System;
+=======
+using System; // For Logger (assuming it's in System or a base namespace)
+>>>>>>> 7dca1ab7713c3d1d4dc14e785b9636cbbaae4ec5
 using System.Collections.Generic;
 
 namespace ImporterApp.Services
 {
+<<<<<<< HEAD
     // カテゴリマッピングサービス
     public class CategoryMappingService
     {
@@ -199,3 +204,19 @@ namespace ImporterApp.Services
     //     }
     // }
 // }
+=======
+    // ブランドマッピングサービス
+    public class CategoryMappingService // クラス名をBrandMappingからBrandMappingServiceに変更し、より責務を明確にしました
+    {
+        /// <summary>
+        /// TempProductのBrandIdをゴールデンブランドIDにマッピングするメソッド
+        /// </summary>
+        public bool CategoryMapping(string brand)
+        {
+            // カテゴリIDマッピング辞書を参照し、存在すればtrue、なければfalseを返す
+            var categoryMap = InMemoryCategoryMapping.CategoryMap;
+            return categoryMap.ContainsKey(brand);
+        }
+    }
+}
+>>>>>>> 7dca1ab7713c3d1d4dc14e785b9636cbbaae4ec5
