@@ -35,6 +35,10 @@ namespace ImporterApp.Services
                 // カテゴリマッピング
                 var categoryPendings = mappingExecutor.ExeuteCategoryMapping(product);
                 InMemoryProductRepository.PendingBrands.AddRange(categoryPendings);
+                // アイテムリストマッピング
+                // カラーを例に
+                var itemListPendings = mappingExecutor.ExecuteItemListMapping(product);
+                InMemoryProductRepository.PendingBrands.AddRange(itemListPendings);
                 
                 return product;
             }

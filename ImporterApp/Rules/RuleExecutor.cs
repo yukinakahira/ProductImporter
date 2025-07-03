@@ -74,7 +74,7 @@ namespace ImporterApp.Rules
                         lastResult = eval1;
                         break;
                 }
-                Logger.Info($"[COND EVAL] Seq={cond.ConditionSeq}, Logic={cond.Logic}, Result={lastResult}");
+                //Logger.Info($"[COND EVAL] Seq={cond.ConditionSeq}, Logic={cond.Logic}, Result={lastResult}");
                 if (lastResult == false) break;
             }
             return lastResult ?? false;
@@ -154,6 +154,8 @@ namespace ImporterApp.Rules
                     // 例如 size1、size2、size3 ，如果有size1——
                     // 这里可以调用 RuleEngine.MapAttributeId
                     product.Attributes.Add(new ProductAttribute { AttributeId = rule.ItemId, Value = value ?? string.Empty });
+                    //在这里输出一下AttributeId和Value
+                    Logger.Info($"[RULE APPLY] RuleId={rule.RuleId}、{rule.TargetTable}の{rule.TargetColumn}に値を設定：AttributeId={rule.ItemId}, Value={value}");
                 }
             }
             //Logger.Info($"[RULE APPLY] RuleId={rule.RuleId}、{rule.TargetTable}の{rule.TargetColumn}に値を設定：{value}");

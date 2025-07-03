@@ -60,21 +60,5 @@ namespace YourProject.Services
                 });
             }
         }
-
-
-        private bool ItemListMapping(string itemCode)
-        {
-            // TODO: 实现物品列表映射逻辑
-            return false;
-        }
-
-        private string GetFailureReason(bool brand, bool category, bool item)
-        {
-            List<string> reasons = new List<string>();
-            if (!brand) reasons.Add("Brand not mapped");
-            if (!category) reasons.Add("Category not mapped");
-            if (!item) reasons.Add("Item not mapped");
-            return string.Join("; ", reasons);
-        }
     }
 }

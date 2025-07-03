@@ -22,24 +22,22 @@ public class Product
     public string State { get; set; } = string.Empty;
     //在庫有無
     public string Zaikoumu { get; set; } = string.Empty;
-    //新增
-    public string ProductStatusManageCode { get; set; } = string.Empty;
-    public string ProductStatusCode { get; set; } = string.Empty;
-    public string StockAvailability { get; set; } = string.Empty;
-    public string SaleAvailability { get; set; } = string.Empty;
-    public string AssessmentPrice { get; set; } = string.Empty;
-    public string PurchasePrice { get; set; } = string.Empty;
-    public string DisplayPrice { get; set; } = string.Empty;
-    public string SalesPrice { get; set; } = string.Empty;
-    public string StoreId { get; set; } = string.Empty;
-    public string StoreName { get; set; } = string.Empty;
-    public string Note { get; set; } = string.Empty;
-    public string StaffName { get; set; } = string.Empty;
-    public string ConsignmentGpCompanyId { get; set; } = string.Empty;
-    public string ConsignedProductCode { get; set; } = string.Empty;
-    public string UpdateType { get; set; } = string.Empty;
+    // 新品区分（新品/中古など）
+    public string NewItemType { get; set; } = string.Empty;
+    // 数量
+    public int Quantity { get; set; } = 0;
+    // 仕入先区分
+    public string SupplierType { get; set; } = string.Empty;
+    // 販売先区分
+    public string SalesDestinationType { get; set; } = string.Empty;
+    // 販売先名
+    public string SalesDestinationName { get; set; } = string.Empty;
+    // 査定価格
+    public decimal AssessmentPrice { get; set; } = 0;
+    // 更新日
+    public string UpdateDate { get; set; } = string.Empty;
+    // 更新時
+    public string UpdateTime { get; set; } = string.Empty;
+    // EAV属性リスト
     public List<ProductAttribute> Attributes { get; set; } = new List<ProductAttribute>();
-    public List<GoldenBrand> goldenBrands { get; set; } = new List<GoldenBrand>();
-    public List<GoldenCategory> GoldenCategories { get; set; } = new List<GoldenCategory>();
-    public List<ProductHistory> Histories { get; set; } = new List<ProductHistory>();
 }

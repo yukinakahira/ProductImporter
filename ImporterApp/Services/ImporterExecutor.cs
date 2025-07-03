@@ -34,12 +34,14 @@ namespace ImporterApp
                 var rulesPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "rules.csv");
                 var ruleEngine = new RuleEngine(rulesPath);
                 var importService = new ImportService(ruleEngine);
+                var ProductList = new List<Product>();
 
                 foreach (var row in stagingData)
                 {
                     try
                     {
                         var product = importService.ProcessRow(row, usageId);
+                        ProductList.Add(product);
 
                         var errors = ProductValidator.Validate(product);
                         if (errors.Any())
@@ -107,18 +109,39 @@ namespace ImporterApp
                         // 行単位のエラーはログに記録し、次の行へ進む
                     }
                 }
+                //修改map成功的代码，显示map类型，输出形式与失败时候类似Type={pending.PendingType}
                 // マッピング成功のブランドリストを出力
-                Logger.Info("=== マッピング成功のブランドリスト（全件） ===");
-                foreach (var product in InMemoryProductRepository.Products)
+                Logger.Info("=== マッピング成功のリスト（全件） ===");
+                foreach (var product in ProductList)
                 {
-                    Logger.Info($"[Mapped] ProductCode={product.ProductCode}, BrandId={product.BrandId}, Category={product.CategoryName}, ProductName={product.ProductName}");
+                    // 通过 PendingBrands 反查每个 Product 的哪些类型未失败，剩下的即为成功
+                    var failedTypes = InMemoryProductRepository.PendingBrands
+                        .Where(p => p.UsageId == product.ProductCode)
+                        .Select(p => p.PendingType.ToUpper())
+                        .ToHashSet();
+
+                    // ブランド
+                    if (!failedTypes.Contains("BRAND"))
+                        Logger.Info($"[Mapped] ProductCode={product.ProductCode}, Type=BRAND, BrandId={product.BrandId}, BrandName={product.BrandName}");
+                    // カテゴリ
+                    if (!failedTypes.Contains("CATEGORY"))
+                        Logger.Info($"[Mapped] ProductCode={product.ProductCode}, Type=CATEGORY, CategoryId={product.CategoryId}, CategoryName={product.CategoryName}");
+                    // 項目リスト（属性）
+                    if (product.Attributes != null && product.Attributes.Count > 0)
+                    {
+                        foreach (var attr in product.Attributes)
+                        {
+                            if (!failedTypes.Contains(attr.AttributeId.ToUpper()))
+                                Logger.Info($"[Mapped] ProductCode={product.ProductCode}, Type={attr.AttributeId.ToUpper()}, AttributeId={attr.AttributeId}, Value={attr.Value}");
+                        }
+                    }
                 }
                 Logger.Info("==============================\n");
 
                 // 全ての処理が完了した後、承認待ちブランドリストを出力
                 if (InMemoryProductRepository.PendingBrands.Count > 0)
                 {
-                    Logger.Info("=== 承認待ちブランドリスト（全件） ===");
+                    Logger.Info("=== 承認待ちリスト（全件） ===");
                     foreach (var pending in InMemoryProductRepository.PendingBrands)
                     {
                         Logger.Info($"[ApprovalPending] Type={pending.PendingType}, PendingId={pending.PendingId},OriginalId={pending.OriginalId}, OriginalName={pending.OriginalName},ProductCode={pending.UsageId}, Remarks={pending.Remarks}");

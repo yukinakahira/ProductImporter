@@ -61,5 +61,39 @@ namespace ImporterApp.Services
             );
             return approvalPendings;
         }
+        // アイテムリストマッピングする
+        public List<ApprovalPending> ExecuteItemListMapping(Product product)
+        {
+            var itemListMappingService = new ItemListMappingService();
+            var approvalPendings = new List<ApprovalPending>();
+            var mappingLogic = new YourProject.Services.MappingLogic();
+            // Product.Attributes から全ての属性（如颜色、尺寸等）をマッピング
+            if (product.Attributes != null)
+            {
+                foreach (var attr in product.Attributes)
+                {
+                    string itemId = attr.AttributeId; // 例：COLOR_ID
+                    string itemListId = attr.Value; // 例：COLOR001
+                    bool isMapped = itemListMappingService.MapItemList(itemId,itemListId);
+                    mappingLogic.MapCommon(
+                        isMapped,
+                        product,
+                        approvalPendings,
+                        itemId.ToUpper(),
+                        itemId,
+                        itemListId,
+                        $"[ItemListMapping] {itemId}({itemListId})はマッピング成功。",
+                        $"[ItemListMapping] {itemId}({itemListId})はマッピング失敗。",
+                        $"項目リスト{itemId}マッピング失敗",
+                        new Dictionary<string, string> {
+                            { "ProductCode", product.ProductCode },
+                            { "ProductName", product.ProductName },
+                            { $"{itemId}Id", itemId }
+                        }
+                    );
+                }
+            }
+            return approvalPendings;
+        }
     }
 }
