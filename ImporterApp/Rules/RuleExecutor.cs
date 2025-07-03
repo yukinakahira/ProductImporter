@@ -138,8 +138,10 @@ namespace ImporterApp.Rules
                 {
                     case "PRODUCT_CODE": product.ProductCode = value ?? string.Empty; break;
                     case "BRAND_ID": product.BrandId = value ?? string.Empty; break;
+                    case "BRAND_NAME": product.BrandName = value ?? string.Empty; break;
                     case "PRODUCT_NAME": product.ProductName = value ?? string.Empty; break;
-                    case "CATEGORY": product.CategoryName = value ?? string.Empty; break;
+                    case "CATEGORY_ID": product.CategoryId = value ?? string.Empty; break;
+                    case "CATEGORY_NAME": product.CategoryName = value ?? string.Empty; break;
                     case "STATUS": product.State = value ?? string.Empty; break;
                     default: break;
                 }

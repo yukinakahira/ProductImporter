@@ -12,6 +12,7 @@ namespace ImporterApp.Infrastructure
             { "CA002", "GoldenC002" }, // 宝石
             { "CA003", "GoldenC003" },// 時計
             { "CA004", "GoldenC004" }, // 衣料品
-        };    
+        };
+        
     }
 }

@@ -27,23 +27,15 @@ namespace ImporterApp.Services
                 Product product = new();
                 Logger.Info($"[IMPORT] 開始: usageId={usageId}, rowData={string.Join(", ", rowData.Select(kv => $"{kv.Key}={kv.Value}"))}");
                 product = RuleExecutor.ExecuteRules(_ruleEngine.Rules, rowData, usageId);
-<<<<<<< Updated upstream
-                //在这里使用Services/MappingExecutor.cs里面的mapping逻辑
+                // マッピングロジックの実行
                 var mappingExecutor = new MappingExecutor();
-                var approvalPendings = mappingExecutor.ExecuteBrandMapping(product);
-                InMemoryProductRepository.PendingBrands.AddRange(approvalPendings);
-=======
-                //BrandMappingServiceを使用して、ProductのBrandIdをゴールデンブランドIDにマッピング
-                var brandMappingService = new BrandMappingService();
-                var approvalPendings = new List<ApprovalPending>();
-                brandMappingService.MapGoldenBrandId(product, approvalPendings);
-                // ApprovalPendingを全局リストにも追加
-                foreach (var pending in approvalPendings)
-                {
-                    InMemoryProductRepository.PendingBrands.Add(pending);
-                }
-                Logger.Info($"[IMPORT] ProductCode={product.ProductCode}, BrandId={product.BrandId}, ProductName={product.ProductName}, Category={product.CategoryName},State={product.State}, Attributes={string.Join(", ", product.Attributes.Select(a => $"{a.AttributeId}={a.Value}"))}");
->>>>>>> Stashed changes
+                //ブランドマッピング
+                var brandPendings = mappingExecutor.ExecuteBrandMapping(product);
+                InMemoryProductRepository.PendingBrands.AddRange(brandPendings);
+                // カテゴリマッピング
+                var categoryPendings = mappingExecutor.ExeuteCategoryMapping(product);
+                InMemoryProductRepository.PendingBrands.AddRange(categoryPendings);
+                
                 return product;
             }
             catch (Exception ex)

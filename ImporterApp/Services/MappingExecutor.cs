@@ -24,22 +24,21 @@ namespace ImporterApp.Services
                 product.BrandName,
                 $"[BrandMapping] TempProductのBrandId({product.BrandId})はマッピング成功。",
                 $"[BrandMapping] TempProductのBrandId({product.BrandId})はマッピングできませんでした。",
-                "ブランドIDマッピングなし",
+                "ブランドIDマッピング失敗",
                 new Dictionary<string, string> {
                     { "ProductCode", product.ProductCode },
+                    { "ProductName", product.ProductName },
                     { "BrandId", product.BrandId },
                     { "BrandName", product.BrandName }
                 }
             );
-            // TODO: カテゴリ、物品等の他のMapCommonも同様に呼び出し可能
-            // approvalPendings 可在主流程统一收集・输出
             return approvalPendings;
         }
         //カテゴリマッピングする
         public List<ApprovalPending> ExeuteCategoryMapping(Product product)
         {
             var categoryMappingService = new CategoryMappingService();
-            bool isMapped = categoryMappingService.CategoryMapping(product.BrandId);
+            bool isMapped = categoryMappingService.CategoryMapping(product.CategoryId);
             var approvalPendings = new List<ApprovalPending>();
             var mappingLogic = new YourProject.Services.MappingLogic();
             // ブランドマッピング
@@ -47,20 +46,19 @@ namespace ImporterApp.Services
                 isMapped,
                 product,
                 approvalPendings,
-                "BRAND",
-                product.BrandId,
-                product.BrandName,
-                $"[BrandMapping] TempProductのBrandId({product.BrandId})はマッピング成功。",
-                $"[BrandMapping] TempProductのBrandId({product.BrandId})はマッピングできませんでした。",
-                "ブランドIDマッピングなし",
+                "CATEGORY",
+                product.CategoryId,
+                product.CategoryName,
+                $"[CategoryMapping] TempProductのCategoryId({product.CategoryId})はマッピング成功。",
+                $"[CategoryMapping] TempProductのCategoryId({product.CategoryId})はマッピング失敗。",
+                "カテゴリIDマッピング失敗",
                 new Dictionary<string, string> {
                     { "ProductCode", product.ProductCode },
+                    { "ProductName", product.ProductName },
                     { "BrandId", product.BrandId },
                     { "BrandName", product.BrandName }
                 }
             );
-            // TODO: カテゴリ、物品等の他のMapCommonも同様に呼び出し可能
-            // approvalPendings 可在主流程统一收集・输出
             return approvalPendings;
         }
     }
