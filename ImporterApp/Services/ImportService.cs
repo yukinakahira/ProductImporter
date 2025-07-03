@@ -20,17 +20,22 @@ namespace ImporterApp.Services
 
         // staging.csvの1行を処理し、Productオブジェクトを返す
         // userScenarioIdは将来の拡張用、現在は使用しない
-        public Product ProcessRow(Dictionary<string, string> rowData, string userScenarioId)
+        public Product ProcessRow(Dictionary<string, string> rowData, string usageId)
         {
             try
             {
                 Product product = new();
-                //product.Attributes = new List<ProductAttribute>();
-                //product.
-                Logger.Info($"[IMPORT] 開始: userScenarioId={userScenarioId}, rowData={string.Join(", ", rowData.Select(kv => $"{kv.Key}={kv.Value}"))}");
-                product = RuleExecutor.ExecuteRules(_ruleEngine.Rules, rowData, userScenarioId);
-                Logger.Info($"[IMPORT] ProductCode={product.ProductCode}, BrandId={product.BrandId}, ProductName={product.ProductName}, Category={product.CategoryName},State={product.State}, Attributes={string.Join(", ", product.Attributes.Select(a => $"{a.AttributeId}={a.Value}"))}");
-                // checkEAV(product);{if get}
+                Logger.Info($"[IMPORT] 開始: usageId={usageId}, rowData={string.Join(", ", rowData.Select(kv => $"{kv.Key}={kv.Value}"))}");
+                product = RuleExecutor.ExecuteRules(_ruleEngine.Rules, rowData, usageId);
+                // マッピングロジックの実行
+                var mappingExecutor = new MappingExecutor();
+                //ブランドマッピング
+                var brandPendings = mappingExecutor.ExecuteBrandMapping(product);
+                InMemoryProductRepository.PendingBrands.AddRange(brandPendings);
+                // カテゴリマッピング
+                var categoryPendings = mappingExecutor.ExeuteCategoryMapping(product);
+                InMemoryProductRepository.PendingBrands.AddRange(categoryPendings);
+                
                 return product;
             }
             catch (Exception ex)
@@ -39,5 +44,6 @@ namespace ImporterApp.Services
                 throw;
             }
         }
+        
     }
 }

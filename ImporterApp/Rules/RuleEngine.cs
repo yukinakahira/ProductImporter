@@ -71,7 +71,7 @@ namespace ImporterApp.Rules
                 Logger.Info($"  TargetColumn  : {group.TargetColumn}");
                 Logger.Info($"  OutType       : {group.OutType}");
                 Logger.Info($"  ResultValue   : {group.ResultValue}");
-                Logger.Info($"  Memo  : {group.Memo}");
+                Logger.Info($"  Priority  : {group.Priority}");
                 Logger.Info($"  [Conditions]  :");
                 foreach (var cond in group.Conditions)
                 {
@@ -106,7 +106,7 @@ namespace ImporterApp.Rules
                         TargetTable = rule.TargetTable,
                         TargetColumn = rule.TargetColumn,
                         ItemId = rule.ItemId,
-                        Memo = rule.Memo,
+                        Priority = rule.Priority ?? string.Empty,
                         Conditions = new List<RuleCondition>()
                     };
                 }
