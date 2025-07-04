@@ -38,7 +38,8 @@ namespace ImporterApp.Services
                 // カラーを例に
                 var itemListPendings = mappingExecutor.ExecuteItemListMapping(product);
                 InMemoryProductRepository.PendingBrands.AddRange(itemListPendings);
-                
+                // Golden商品コード生成し、Productオブジェクトに保存
+                product.GProductCode = GoldenRecordForm.GenerateGoldenProductCode(product);
                 return product;
             }
             catch (Exception ex)

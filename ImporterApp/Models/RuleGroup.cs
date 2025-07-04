@@ -1,6 +1,6 @@
 namespace ImporterApp.Models
 {
-    // 
+    // ルール条件読み込む
     public class RuleCondition
     {
         public int ConditionSeq { get; set; }
@@ -10,7 +10,7 @@ namespace ImporterApp.Models
         public string? Logic { get; set; }
     }
 
-    // 规则分组
+    // ルールグループ
     public class RuleGroup
     {
         public string Usage { get; set; }= string.Empty;

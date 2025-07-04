@@ -34,7 +34,7 @@ namespace ImporterApp.Services.Execution
                 }
 
                 // ルールエンジンの初期化
-                var rulesPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "rules.csv");
+                var rulesPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "Rules_General.csv");
                 var ruleEngine = new RuleEngine(rulesPath);
                 var importService = new ImportService(ruleEngine);
                 var ProductList = new List<Product>();
@@ -44,6 +44,8 @@ namespace ImporterApp.Services.Execution
                     try
                     {
                         var product = importService.ProcessRow(row, usageId);
+                        // Product生成時にgroupCompanyIdを保存する
+                        product.GpCompanyId = groupCompanyId;
                         ProductList.Add(product);
 
                         var errors = ProductValidator.Validate(product);
@@ -84,25 +86,28 @@ namespace ImporterApp.Services.Execution
                         }
                         // ここで商品情報をログに出力
                         Logger.Info("=== Product Summary ===");
-                        Logger.Info($"ProductCode : {product.ProductCode}");
-                        Logger.Info($"CategoryId : {product.CategoryId}");
-                        Logger.Info($"CategoryName : {product.CategoryName}");
-                        Logger.Info($"BrandId     : {product.BrandId}");
-                        Logger.Info($"BrandName : {product.BrandName}");
-                        Logger.Info($"ProductName : {product.ProductName}");
-                        Logger.Info($"State : {product.State}");
-
-                        if (product.Attributes.Any())
+                        foreach (var prop in typeof(Product).GetProperties())
                         {
-                            Logger.Info("Attributes  :");
-                            foreach (var attr in product.Attributes)
+                            var value = prop.GetValue(product);
+                            if (value is System.Collections.IEnumerable enumerable && !(value is string))
                             {
-                                Logger.Info($"  - {attr.AttributeId} = {attr.Value}");
-                            }
-                        }
-                        else
-                        {
-                            Logger.Info("Attributes  : (none)");
+                                Logger.Info($"{prop.Name} :");
+                                int count = 0;
+                                foreach (var item in enumerable)
+                                {
+                                    if (item is ImporterApp.Models.ProductAttribute attr)
+                                        Logger.Info($"  - {attr.AttributeId} = {attr.Value}");
+                                    else
+                                        Logger.Info($"  - {item}");
+                                    count++;
+                                }
+                                if (count == 0)
+                                    Logger.Info("  (none)");
+                                    }
+                                    else
+                                    {
+                                        Logger.Info($"{prop.Name} : {value}");
+                                    }
                         }
                         Logger.Info("=======================");
                     }

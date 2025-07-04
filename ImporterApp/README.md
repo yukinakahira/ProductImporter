@@ -7,13 +7,20 @@ ProductImporter/
 ├── ImporterApp/               ... 本体アプリケーション
 │   ├── Models/                ... Productモデル、属性情報など
 │   ├── Services/              ... 変換ロジック、バリデーションなど
+│   │   ├── Execution/         ... インポート実行関連のロジック
+│   │   ├── Mapping/           ... 各種マッピング処理
+│   │   ├── Validation/        ... データのバリデーション処理
+│   │   ├── Diffing/           ... 差分チェック処理
+│   │   └── Shared/            ... 共通処理・ユーティリティ
+│   │
 │   ├── Infrastructure/        ... 疑似リポジトリ（メモリ保存など）
 │   ├── Rules/                 ... 後で使用予定ルールまとめ
 │   └── Program.cs             ... 実行エントリーポイント
 ├── staging.csv                ... 実行用CSV（自由に作成できます）
 ├── README.md                  ... このファイル
-└──  ImporterApp.Tests/        ... 単体テストプロジェクト（xUnit）
+└── ImporterApp.Tests/         ... 単体テストプロジェクト（xUnit）
     └── Tests/                 ... テストケース
+
 
 ## 実行方法
 cd ImporterApp

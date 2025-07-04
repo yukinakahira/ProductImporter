@@ -13,7 +13,7 @@ namespace ImporterApp.Infrastructure
         public static readonly List<FileImportRule> FileImportRules = new List<FileImportRule>
         {
             new FileImportRule { FileName = "RKE伝票.csv", GpCompanyId = "RKE", UsageId = "RKE_PRODCT" },
-            new FileImportRule { FileName = "KM伝票.csv", GpCompanyId = "KM", UsageId = "KM_PRODCT" },
+            new FileImportRule { FileName = "KM商品.csv", GpCompanyId = "KM", UsageId = "KM_PRODCT" },
             // 必要に応じて追加
         };
 

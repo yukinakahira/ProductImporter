@@ -36,53 +36,53 @@ namespace ImporterApp.Rules
                     Memo = cols[14]
                 }).Where(x => x != null).ToList();
 
-            // 输出所有原始规则（结构化、分行、带标签）
-            Logger.Info("========== [RULES] Raw rules loaded from CSV ==========");
-            foreach (var rule in rawRules)
-            {
-                Logger.Info($"--- Rule ---");
-                Logger.Info($"  Usage         : {rule.Usage}");
-                Logger.Info($"  RuleId        : {rule.RuleId}");
-                Logger.Info($"  ItemId        : {rule.ItemId}");
-                Logger.Info($"  TargetTable   : {rule.TargetTable}");
-                Logger.Info($"  TargetColumn  : {rule.TargetColumn}");
-                Logger.Info($"  OutType       : {rule.OutType}");
-                Logger.Info($"  ResultValue   : {rule.ResultValue}");
-                Logger.Info($"  ConditionSeq  : {rule.ConditionSeq}");
-                Logger.Info($"  ColumnIndex   : {rule.ColumnIndex}");
-                Logger.Info($"  Operator      : {rule.Operator}");
-                Logger.Info($"  CompareValue  : {rule.CompareValue}");
-                Logger.Info($"  Logic         : {rule.Logic}");
-                Logger.Info($"  Memo          : {rule.Memo}");
-            }
-            Logger.Info("======================================================");
+            // // 输出所有原始规则（结构化、分行、带标签）
+            // Logger.Info("========== [RULES] Raw rules loaded from CSV ==========");
+            // foreach (var rule in rawRules)
+            // {
+            //     Logger.Info($"--- Rule ---");
+            //     Logger.Info($"  Usage         : {rule.Usage}");
+            //     Logger.Info($"  RuleId        : {rule.RuleId}");
+            //     Logger.Info($"  ItemId        : {rule.ItemId}");
+            //     Logger.Info($"  TargetTable   : {rule.TargetTable}");
+            //     Logger.Info($"  TargetColumn  : {rule.TargetColumn}");
+            //     Logger.Info($"  OutType       : {rule.OutType}");
+            //     Logger.Info($"  ResultValue   : {rule.ResultValue}");
+            //     Logger.Info($"  ConditionSeq  : {rule.ConditionSeq}");
+            //     Logger.Info($"  ColumnIndex   : {rule.ColumnIndex}");
+            //     Logger.Info($"  Operator      : {rule.Operator}");
+            //     Logger.Info($"  CompareValue  : {rule.CompareValue}");
+            //     Logger.Info($"  Logic         : {rule.Logic}");
+            //     Logger.Info($"  Memo          : {rule.Memo}");
+            // }
+            // Logger.Info("======================================================");
 
             Rules = GroupRules(rawRules);
 
-            // 输出所有分组后的规则组（结构化、分行、带标签）
-            Logger.Info("========== [RULE GROUPS] Grouped rules ==========");
-            foreach (var group in Rules)
-            {
-                Logger.Info($"--- RuleGroup ---");
-                Logger.Info($"  RuleId        : {group.RuleId}");
-                Logger.Info($"  Usage         : {group.Usage}");
-                Logger.Info($"  ItemId        : {group.ItemId}");
-                Logger.Info($"  TargetTable   : {group.TargetTable}");
-                Logger.Info($"  TargetColumn  : {group.TargetColumn}");
-                Logger.Info($"  OutType       : {group.OutType}");
-                Logger.Info($"  ResultValue   : {group.ResultValue}");
-                Logger.Info($"  Priority  : {group.Priority}");
-                Logger.Info($"  [Conditions]  :");
-                foreach (var cond in group.Conditions)
-                {
-                    Logger.Info($"    - Seq        : {cond.ConditionSeq}");
-                    Logger.Info($"      ColIdx     : {cond.ColumnIndex}");
-                    Logger.Info($"      Operator   : {cond.Operator}");
-                    Logger.Info($"      CompareVal : {cond.CompareValue}");
-                    Logger.Info($"      Logic      : {cond.Logic}");
-                }
-            }
-            Logger.Info("===============================================");
+            // // 输出所有分组后的规则组（结构化、分行、带标签）
+            // Logger.Info("========== [RULE GROUPS] Grouped rules ==========");
+            // foreach (var group in Rules)
+            // {
+            //     Logger.Info($"--- RuleGroup ---");
+            //     Logger.Info($"  RuleId        : {group.RuleId}");
+            //     Logger.Info($"  Usage         : {group.Usage}");
+            //     Logger.Info($"  ItemId        : {group.ItemId}");
+            //     Logger.Info($"  TargetTable   : {group.TargetTable}");
+            //     Logger.Info($"  TargetColumn  : {group.TargetColumn}");
+            //     Logger.Info($"  OutType       : {group.OutType}");
+            //     Logger.Info($"  ResultValue   : {group.ResultValue}");
+            //     Logger.Info($"  Priority  : {group.Priority}");
+            //     Logger.Info($"  [Conditions]  :");
+            //     foreach (var cond in group.Conditions)
+            //     {
+            //         Logger.Info($"    - Seq        : {cond.ConditionSeq}");
+            //         Logger.Info($"      ColIdx     : {cond.ColumnIndex}");
+            //         Logger.Info($"      Operator   : {cond.Operator}");
+            //         Logger.Info($"      CompareVal : {cond.CompareValue}");
+            //         Logger.Info($"      Logic      : {cond.Logic}");
+            //     }
+            // }
+            // Logger.Info("===============================================");
         }
 
         // ルールをRuleGroup単位にまとめる
@@ -128,10 +128,79 @@ namespace ImporterApp.Rules
             }
             return grouped;
         }
-         public string MapAttributeId(string itemId, string category)
-         {
-             Logger.Info($"[DEBUG] Mapping attribute: {itemId} with category: {category}");
-             return MeaningRules.FirstOrDefault(r => r.AttributeId == itemId && r.Usage == category)?.MappedAttributeId ?? itemId;
-         }
+        // シンプルな比較メソッド
+        private static bool Evaluate(string value, string op, string compare)
+        {
+            switch (op)
+            {
+                case "=":
+                    return value == compare;
+                case "<>":
+                    return value != compare;
+                case ">":
+                    return double.TryParse(value, out var d1) && double.TryParse(compare, out var d2) && d1 > d2;
+                case "<":
+                    return double.TryParse(value, out var d3) && double.TryParse(compare, out var d4) && d3 < d4;
+                case "LIKE":
+                    if (value == null || compare == null) return false;
+                    // SQL風: %abc, abc%, %abc%, abc
+                    if (compare.StartsWith("%") && compare.EndsWith("%"))
+                        return value.Contains(compare.Trim('%'));
+                    else if (compare.StartsWith("%"))
+                        return value.EndsWith(compare.TrimStart('%'));
+                    else if (compare.EndsWith("%"))
+                        return value.StartsWith(compare.TrimEnd('%'));
+                    else
+                        return value == compare;
+                case "TRUE":
+                    return value != null && value.ToUpper() == "TRUE";
+                default:
+                    return true;
+            }
+        }
+        // ルール条件の評価メソッド
+        public static bool EvaluateConditions(List<RuleCondition> conditions, Dictionary<string, string> rowData, string userScenarioId)
+        {
+            // usage（userScenarioId）が指定されている場合、最初の条件のUsage列（またはRuleGroupのUsage）と一致しなければfalseを返す
+            // ...既存の条件評価ロジック...
+            bool? lastResult = null;
+            for (int i = 0; i < conditions.Count; i++)
+            {
+                var cond = conditions[i];
+                var condNext = (i + 1 < conditions.Count) ? conditions[i + 1] : null;
+                // 現在の条件の値を取得
+                string key = cond.ColumnIndex.ToString();
+                string value1 = string.Empty;
+                if (!string.IsNullOrEmpty(key))
+                {
+                    rowData.TryGetValue(key, out value1);
+                }
+                bool eval1 = Evaluate(value1, cond.Operator ?? string.Empty, cond.CompareValue ?? string.Empty);
+                bool eval2 = false;
+                if (condNext != null)
+                {
+                    string key2 = condNext.ColumnIndex.ToString();
+                    string value2 = string.Empty;
+                    if (!string.IsNullOrEmpty(key2)) rowData.TryGetValue(key2, out value2);
+                    eval2 = Evaluate(value2, condNext.Operator ?? string.Empty, condNext.CompareValue ?? string.Empty);
+                }
+                switch (cond.Logic)
+                {
+                    case "AND":
+                        lastResult = eval1 && eval2;
+                        break;
+                    case "OR":
+                        lastResult = eval1 || eval2;
+                        break;
+                    default:
+                        lastResult = eval1;
+                        break;
+                }
+                //Logger.Info($"[COND EVAL] Seq={cond.ConditionSeq}, Logic={cond.Logic}, Result={lastResult}");
+                if (lastResult == false) break;
+            }
+            return lastResult ?? false;
+        }
+
     }
 }
