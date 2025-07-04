@@ -1,9 +1,12 @@
 using ImporterApp.Models;
 using ImporterApp.Infrastructure;
 using ImporterApp.Rules;
+using ImporterApp.Services.Shared;
+using ImporterApp.Services.Diffing;
+using ImporterApp.Services.Validation;
 using ImporterApp.Services;
 
-namespace ImporterApp
+namespace ImporterApp.Services.Execution
 {
     // メインビジネスロジック
     public class ImporterExecutor
@@ -109,7 +112,6 @@ namespace ImporterApp
                         // 行単位のエラーはログに記録し、次の行へ進む
                     }
                 }
-                //修改map成功的代码，显示map类型，输出形式与失败时候类似Type={pending.PendingType}
                 // マッピング成功のブランドリストを出力
                 Logger.Info("=== マッピング成功のリスト（全件） ===");
                 foreach (var product in ProductList)

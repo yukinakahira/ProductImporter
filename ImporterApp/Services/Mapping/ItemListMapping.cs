@@ -2,7 +2,7 @@ using ImporterApp.Infrastructure;
 using ImporterApp.Models;
 using System.Collections.Generic;
 
-namespace ImporterApp.Services
+namespace ImporterApp.Services.Mapping
 {
     public class ItemListMappingService
     {

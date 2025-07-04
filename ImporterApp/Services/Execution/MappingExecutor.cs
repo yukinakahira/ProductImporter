@@ -2,8 +2,9 @@ using ImporterApp.Infrastructure;
 using ImporterApp.Models;
 using System; // For Logger (assuming it's in System or a base namespace)
 using System.Collections.Generic;
+using ImporterApp.Services.Mapping;
 
-namespace ImporterApp.Services
+namespace ImporterApp.Services.Execution
 {
     public class MappingExecutor
     {
@@ -13,7 +14,7 @@ namespace ImporterApp.Services
             var brandMappingService = new BrandMappingService();
             bool isMapped = brandMappingService.BrandMapping(product.BrandId);
             var approvalPendings = new List<ApprovalPending>();
-            var mappingLogic = new YourProject.Services.MappingLogic();
+            var mappingLogic = new ImporterApp.Services.Mapping.MappingLogic();
             // ブランドマッピング
             mappingLogic.MapCommon(
                 isMapped,
@@ -40,7 +41,7 @@ namespace ImporterApp.Services
             var categoryMappingService = new CategoryMappingService();
             bool isMapped = categoryMappingService.CategoryMapping(product.CategoryId);
             var approvalPendings = new List<ApprovalPending>();
-            var mappingLogic = new YourProject.Services.MappingLogic();
+            var mappingLogic = new ImporterApp.Services.Mapping.MappingLogic();
             // ブランドマッピング
             mappingLogic.MapCommon(
                 isMapped,
@@ -66,7 +67,7 @@ namespace ImporterApp.Services
         {
             var itemListMappingService = new ItemListMappingService();
             var approvalPendings = new List<ApprovalPending>();
-            var mappingLogic = new YourProject.Services.MappingLogic();
+            var mappingLogic = new ImporterApp.Services.Mapping.MappingLogic();
             // Product.Attributes から全ての属性（如颜色、尺寸等）をマッピング
             if (product.Attributes != null)
             {

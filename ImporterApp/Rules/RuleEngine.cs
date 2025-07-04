@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Linq;
 using ImporterApp.Infrastructure;
-using ImporterApp.Services;
+using ImporterApp.Services.Shared;
 
 namespace ImporterApp.Rules
 {

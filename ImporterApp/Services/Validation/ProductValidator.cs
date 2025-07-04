@@ -1,6 +1,6 @@
 using ImporterApp.Models;
 
-namespace ImporterApp.Services
+namespace ImporterApp.Services.Validation
 {
     // チェック処理
     public class ProductValidator

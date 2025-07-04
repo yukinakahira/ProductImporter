@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace ImporterApp.Services
+namespace ImporterApp.Services.Shared
 {
     // ロガー
     public static class Logger

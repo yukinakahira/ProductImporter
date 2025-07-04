@@ -1,4 +1,4 @@
-using ImporterApp.Services;
+using ImporterApp.Services.Shared;
 using System.Text;
 using System.Linq;
 using ImporterApp.Rules;
@@ -31,7 +31,7 @@ namespace ImporterApp.Services
                 });
                 var whereClause = string.Join(" AND ", whereParts);
                 var sql = $"UPDATE {table} SET {setPart} WHERE {whereClause};";
-                Logger.Info($"[SQL] {sql}");
+                //Logger.Info($"[SQL] {sql}");
             }
         }
     }

@@ -3,7 +3,7 @@ using ImporterApp.Infrastructure;
 using ImporterApp.Models;  
 using System; // For Logger (assuming it's in System or a base namespace)
 
-namespace ImporterApp.Services
+namespace ImporterApp.Services.Mapping
 {
     // // カテゴリマッピングサービス
     // public class CategoryMappingService

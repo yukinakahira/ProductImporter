@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using ImporterApp.Models;
-using ImporterApp.Services;
+using ImporterApp.Services.Shared;
 using ImporterApp.Infrastructure;
 
 namespace ImporterApp.Rules
@@ -150,12 +150,9 @@ namespace ImporterApp.Rules
             {
                 if (!string.IsNullOrEmpty(rule.ItemId) && !product.Attributes.Exists(a => a.AttributeId == rule.ItemId))
                 {
-                    // 在这里进行判断，做一个mapping
-                    // 例如 size1、size2、size3 ，如果有size1——
-                    // 这里可以调用 RuleEngine.MapAttributeId
                     product.Attributes.Add(new ProductAttribute { AttributeId = rule.ItemId, Value = value ?? string.Empty });
-                    //在这里输出一下AttributeId和Value
-                    Logger.Info($"[RULE APPLY] RuleId={rule.RuleId}、{rule.TargetTable}の{rule.TargetColumn}に値を設定：AttributeId={rule.ItemId}, Value={value}");
+                    
+                    //Logger.Info($"[RULE APPLY] RuleId={rule.RuleId}、{rule.TargetTable}の{rule.TargetColumn}に値を設定：AttributeId={rule.ItemId}, Value={value}");
                 }
             }
             //Logger.Info($"[RULE APPLY] RuleId={rule.RuleId}、{rule.TargetTable}の{rule.TargetColumn}に値を設定：{value}");

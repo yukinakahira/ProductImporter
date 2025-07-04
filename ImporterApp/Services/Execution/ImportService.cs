@@ -1,9 +1,8 @@
 using ImporterApp.Models;
-using System.Collections.Generic;
-using System.Linq;
-using System;
 using ImporterApp.Infrastructure;
 using ImporterApp.Rules;
+using ImporterApp.Services.Shared;
+using ImporterApp.Services.Execution;
 
 namespace ImporterApp.Services
 {
@@ -11,9 +10,9 @@ namespace ImporterApp.Services
     // ステージングデータとマッピングルールのマッチング
     public class ImportService
     {
-        private readonly RuleEngine _ruleEngine;
+        private readonly ImporterApp.Rules.RuleEngine _ruleEngine;
 
-        public ImportService(RuleEngine ruleEngine)
+        public ImportService(ImporterApp.Rules.RuleEngine ruleEngine)
         {
             _ruleEngine = ruleEngine;
         }

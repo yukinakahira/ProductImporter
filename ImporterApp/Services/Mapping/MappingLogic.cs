@@ -8,9 +8,9 @@
 using ImporterApp.Models;
 using ImporterApp.Infrastructure;
 using System.Collections.Generic;
-using ImporterApp.Services;
+using ImporterApp.Services.Shared;
 
-namespace YourProject.Services
+namespace ImporterApp.Services.Mapping
 {
     public class MappingLogic
     {

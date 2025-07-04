@@ -1,7 +1,7 @@
 using ImporterApp.Models;
 using System.Collections.Generic;
 
-namespace ImporterApp.Services
+namespace ImporterApp.Services.Diffing
 {
     // 商品情報差分判定ロジック
     public static class ProductDiffer
